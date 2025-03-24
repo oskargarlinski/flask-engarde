@@ -1,0 +1,10 @@
+{# templates/_macros.html #}
+{% macro nav_link(name, endpoint, current) %}
+  {% set is_active = (current == name) %}
+  <a 
+    class="nav-link{% if is_active %} active{% endif %}"
+    href="{{ url_for(endpoint) }}"
+    aria-current="{% if is_active %}page{% else %}false{% endif %}">
+    {{ name.replace('_', ' ').title() }}
+  </a>
+{% endmacro %}
