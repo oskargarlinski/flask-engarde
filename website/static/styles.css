@@ -1,0 +1,33 @@
+:root {
+    --fencing-gold: #D4AF37;
+    --fencing-dark: #1C1C1C;
+}
+
+body {
+    font-family: 'Merriweather', serif;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Playfair Display', serif;
+}
+
+.navbar {
+    background-color: var(--fencing-dark);
+}
+
+/* Hover + active state */
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--fencing-gold);
+}
+
+.nav-link {
+    color: white;
+    transition: color 0.5s ease;
+}
+
+.nav-link:hover { 
+    color: var(--fencing-gold); 
+}

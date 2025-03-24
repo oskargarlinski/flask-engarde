@@ -2,3 +2,23 @@
 {% block title %}
   Sign Up
 {% endblock %}
+
+{% block content %}
+  <div class="container-md p-3 mt-5">
+    <form>
+      <h1 class="text-center fw-bold">CREATE ACCOUNT</h1>
+      <p class="text-muted fs-5 text-center">Create an account to start fencing with style.</p>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <input type="text" class="form-control" name="inputFName" id="inputFName" placeholder="First Name" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <input type="text" class="form-control" name="inputLName" id="inputLName" placeholder="Last Name" />
+        </div>
+      </div>
+      <div class="mb-3">
+        <input type="email" class="form-control" name="inputEmail" id="inputEmail" placeholder="E-Mail Address" />
+      </div>
+    </form>
+  </div>
+{% endblock %}
