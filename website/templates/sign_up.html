@@ -4,7 +4,7 @@
 {% endblock %}
 
 {% block content %}
-  <main class="{{ page_class }}">
+  <main class="signup-page">
     <div class="p-5 rounded shadow-lg bg-white" style="max-width: 600px; width: 100%;">
       {% with messages=get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -119,17 +119,18 @@
       let color = ''
       if (strength <= 2) {
         text = 'Weak'
-        color = 'text-danger'
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-weak');
       } else if (strength === 3 || strength === 4) {
         text = 'Moderate'
-        color = 'text-warning'
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-moderate');
       } else if (strength === 5) {
         text = 'Strong'
-        color = 'text-success'
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-strong');
       }
     
       strengthDisplay.textContent = `Password Strength: ${text}`
-      strengthDisplay.className = `mt-2 small fw-bold ${color}`
+      strengthDisplay.className = `mt-2 small fw-bold`
+      strengthDisplay.style.color = color;
     })
   </script>
 {% endblock %}

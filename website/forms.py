@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError
 import re
 
@@ -10,13 +10,16 @@ def strong_password(form, field):
     if len(password) < 8:
         raise ValidationError("Password must be at least 8 characters long.")
     if not re.search(r'[A-Z]', password):
-        raise ValidationError( "Password must include at least one uppercase letter.")
+        raise ValidationError(
+            "Password must include at least one uppercase letter.")
     if not re.search(r'[a-z]', password):
-        raise ValidationError( "Password must include at least one lowercase letter.")
+        raise ValidationError(
+            "Password must include at least one lowercase letter.")
     if not re.search(r'\d', password):
         raise ValidationError("Password must include at least one number.")
     if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-        raise ValidationError( "Password must include at least one special character.")
+        raise ValidationError(
+            "Password must include at least one special character.")
 
 
 class SignupForm(FlaskForm):
@@ -30,3 +33,12 @@ class SignupForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[
                                      DataRequired(message="Please confirm your password."), EqualTo('password', message='Passwords must match')])
     submit = SubmitField('Sign Up')
+
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(
+        message="Email is required."), Email(message="Please enter a valid email address.")])
+    password = PasswordField('Password', validators=[
+                             DataRequired(message="Password is required.")])
+    remember = BooleanField("Remember Me")
+    submit = SubmitField("Sign In")

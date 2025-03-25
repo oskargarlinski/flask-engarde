@@ -22,31 +22,12 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3">
       <div class="container-fluid d-flex align-items-center justify-content-between">
         <!-- LEFT: Logo -->
-        <div class="d-flex align-items-center" style="min-width: 218px;">
-          <a class="navbar-brand" href="#"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Brand" height="50" /></a>
+        <div class="d-flex align-items-center">
+          <a class="navbar-brand" href="{{ url_for('views.home') }}"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Brand" height="50" /></a>
         </div>
 
-        <!-- CENTER: Nav links -->
-        <div class="d-none d-lg-flex justify-content-center flex-grow-1">
-          <ul class="navbar-nav">
-            <li class="nav-item mx-2">
-              <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{{ url_for('views.home') }}">Home</a>
-            </li>
-            <li class="nav-item mx-2">
-              <a class="nav-link {% if active_page == 'shop' %}active{% endif %}" href="{{ url_for('views.shop') }}">Shop</a>
-            </li>
-            <li class="nav-item mx-2">
-              <a class="nav-link {% if active_page == 'contact' %}active{% endif %}" href="{{ url_for('views.contact') }}">Contact</a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- RIGHT: Icons -->
-        <div class="d-flex align-items-center justify-content-end" style="min-width: 218px;">
-          <a href="#" class="nav-link px-2"><i class="fa-solid fa-magnifying-glass"></i></a>
-          <a href="{{ url_for('auth.login') }}" class="nav-link px-2"><i class="fa-solid fa-circle-user"></i></a>
-          <a href="#" class="nav-link px-2"><i class="fa-solid fa-cart-shopping"></i></a>
-        </div>
+        <!-- Removed middle nav links and right icons for now -->
+        <!-- TODO: Revisit mega menu + right nav icons tomorrow -->
       </div>
     </nav>
 
@@ -72,5 +53,35 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+    <script>
+      const dropdown = document.querySelector('.mega-dropdown')
+      const megaMenu = document.querySelector('.mega-menu')
+      
+      let timer
+      
+      if (dropdown && megaMenu) {
+        dropdown.addEventListener('mouseenter', () => {
+          clearTimeout(timer)
+          megaMenu.classList.add('show-mega')
+        })
+      
+        dropdown.addEventListener('mouseleave', () => {
+          timer = setTimeout(() => {
+            megaMenu.classList.remove('show-mega')
+          }, 200) // 200ms delay before hiding
+        })
+      
+        megaMenu.addEventListener('mouseenter', () => {
+          clearTimeout(timer)
+          megaMenu.classList.add('show-mega')
+        })
+      
+        megaMenu.addEventListener('mouseleave', () => {
+          timer = setTimeout(() => {
+            megaMenu.classList.remove('show-mega')
+          }, 200)
+        })
+      }
+    </script>
   </body>
 </html>

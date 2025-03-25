@@ -1,8 +1,12 @@
 :root {
     --fencing-gold: #D4AF37;
     --fencing-dark: #1C1C1C;
+    --gold-weak: #cd7f32;
+    --gold-moderate: #D4AF37;
+    --gold-strong: #ffdf00;
 }
 
+/* Fonts */
 body {
     font-family: 'Merriweather', serif;
 }
@@ -13,47 +17,46 @@ h3 {
     font-family: 'Playfair Display', serif;
 }
 
+/* Navbar */
 .navbar {
     background-color: var(--fencing-dark);
 }
 
-/* Hover + active state */
+.navbar-nav .nav-link {
+    color: white;
+    transition: color 0.5s ease;
+}
+
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
     color: var(--fencing-gold);
 }
 
-.nav-link {
-    color: white;
-    transition: color 0.5s ease;
-}
-
-.nav-link:hover {
-    color: var(--fencing-gold);
+/* Auth page backgrounds */
+.login-page,
+.signup-page {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
 }
 
 .login-page {
-    background: url("images/fencing-bg-1.jpeg") no-repeat center center fixed;
-    background-size: cover;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    background-image: url("images/fencing-bg-1.jpeg");
 }
 
 .signup-page {
-    background: url("images/fencing-bg-2.jpeg") no-repeat center center fixed;
-    background-size: cover;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+    background-image: url("images/fencing-bg-2.jpeg");
 }
 
+/* Footer */
 footer {
-    background-color: #1C1C1C;
+    background-color: var(--fencing-dark);
     color: white;
 }
 
@@ -74,3 +77,53 @@ footer a {
 footer a:hover {
     color: var(--fencing-gold);
 }
+
+/* Flash message */
+#password-strength {
+    transition: color 0.4s ease;
+}
+
+/* Mega menu dropdown */
+.nav-item.dropdown {
+    position: relative;
+}
+
+.mega-dropdown {
+    position: relative;
+  }
+  
+  .mega-dropdown .nav-link {
+    position: relative;
+    z-index: 1100;
+  }
+  
+  .mega-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    background-color: white;
+    padding: 2rem 0;
+    border-top: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .mega-menu {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+  }
+  
+  .mega-menu.show-mega {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  
+  
