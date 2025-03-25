@@ -4,6 +4,7 @@ from os import path
 from flask_login import LoginManager
 
 DB_NAME = 'database.db'
+UPLOAD_FOLDER = 'website/static/images/products'
 
 
 def create_app():
@@ -11,13 +12,17 @@ def create_app():
     app.config['SECRET_KEY'] = 'ANGRY CHIHUAHUA'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + DB_NAME
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
     db.init_app(app)
 
     from .views import views
     from .auth import auth
+    from .admin import admin
+
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
+    app.register_blueprint(admin, url_prefix='/')
 
     with app.app_context():
         db.create_all()
@@ -29,5 +34,5 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
-    
+
     return app

@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from flask_wtf.file import FileField, FileAllowed
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError
 import re
 
@@ -42,3 +43,38 @@ class LoginForm(FlaskForm):
                              DataRequired(message="Password is required.")])
     remember = BooleanField("Remember Me")
     submit = SubmitField("Sign In")
+
+
+class BaseProductForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired(), Length(max=100)])
+    description = StringField("Description", validators=[DataRequired()])
+    image = FileField("Product Image", validators=[
+        FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Images only!')
+    ])
+    price = FloatField("Price (£)", validators=[DataRequired()])
+    environmental_impact = FloatField(
+        "Environmental Impact (kg CO₂)", validators=[DataRequired()])
+
+
+class WeaponForm(BaseProductForm):
+    blade_type = SelectField("Blade Type", choices=[
+        ('', 'Select'), ('Foil', 'Foil'), ('Epee', 'Épée'), ('Sabre', 'Sabre')
+    ], validators=[DataRequired()])
+    certification = StringField("Certification")
+    submit = SubmitField("Add Weapon")
+
+
+class ApparelForm(BaseProductForm):
+    material = StringField("Material")
+    certification = StringField("Certification")
+    newton_rating = IntegerField("Newton Rating")
+    submit = SubmitField("Add Apparel")
+
+
+class GloveForm(BaseProductForm):
+    certification = StringField("Certification")
+    submit = SubmitField("Add Glove")
+
+
+class FootwearForm(BaseProductForm):
+    submit = SubmitField("Add Footwear")

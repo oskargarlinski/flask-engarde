@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}
+  Edit Weapon
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Edit Weapon</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">{{ form.name.label(class='form-label') }}
+        {{ form.name(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.description.label(class='form-label') }}
+        {{ form.description(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.image.label(class='form-label') }}
+        {{ form.image(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.price.label(class='form-label') }}
+        {{ form.price(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.environmental_impact.label(class='form-label') }}
+        {{ form.environmental_impact(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.blade_type.label(class='form-label') }}
+        {{ form.blade_type(class='form-select') }}</div>
+
+      <div class="mb-3">{{ form.certification.label(class='form-label') }}
+        {{ form.certification(class='form-control') }}</div>
+
+      {{ form.submit(class='btn btn-dark', value='Update Weapon') }}
+    </form>
+    {% if weapon.image_filename %}
+      <div class="mb-3">
+        <label class="form-label">Current Image:</label><br />
+        <img src="{{ url_for('static', filename='images/products/' ~ weapon.image_filename) }}" height="100" />
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
