@@ -1,0 +1,178 @@
+<nav class="navbar navbar-expand-lg navbar-dark py-3">
+  <div class="container-fluid">
+    <!-- Toggle button -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"><span class="navbar-toggler-icon"></span></button>
+
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <div class="d-flex w-100 align-items-center">
+        <!-- LEFT -->
+        <div class="d-flex align-items-center justify-content-start flex-grow-1">
+          <a class="navbar-brand" href="{{ url_for('views.home') }}"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Brand" height="50" /></a>
+        </div>
+
+        <!-- CENTER -->
+        <ul class="navbar-nav justify-content-center flex-grow-1">
+          <li class="nav-item" id="mens-nav">
+            <a class="nav-link" href="#">MEN'S</a>
+          </li>
+          <li class="nav-item" id="womens-nav">
+            <a class="nav-link" href="#">WOMEN'S</a>
+          </li>
+          <li class="nav-item" id="gear-nav">
+            <a class="nav-link" href="#">GEAR</a>
+          </li>
+        </ul>
+
+        <!-- RIGHT -->
+        <div class="d-flex align-items-center justify-content-end flex-grow-1" style="gap: 1rem;">
+          <a href="#" class="nav-link px-2"><i class="fa-solid fa-magnifying-glass"></i></a>
+          {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.logout') }}" class="nav-link px-2" title="Logout"><i class="fa-solid fa-door-open"></i></a>
+          {% else %}
+            <a href="{{ url_for('auth.login') }}" class="nav-link px-2" title="Login"><i class="fa-solid fa-circle-user"></i></a>
+          {% endif %}
+          <a href="#" class="nav-link px-2"><i class="fa-solid fa-cart-shopping"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Mega Menu for MEN'S -->
+<div class="mega-menu" id="mega-menu-mens">
+  <div class="container py-4">
+    <div class="row">
+      <!-- Column 1 -->
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Fencing Wear</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Jackets</a>
+          </li>
+          <li>
+            <a href="#">Plastrons</a>
+          </li>
+          <li>
+            <a href="#">Breeches</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Column 2 -->
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Footwear</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Socks</a>
+          </li>
+          <li>
+            <a href="#">Shoes</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Column 3 -->
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Featured</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Best Sellers</a>
+          </li>
+          <li>
+            <a href="#">New Arrivals</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mega-menu" id="mega-menu-womens">
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Fencing Wear</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Jackets</a>
+          </li>
+          <li>
+            <a href="#">Plastrons</a>
+          </li>
+          <li>
+            <a href="#">Chest Protectors</a>
+          </li>
+          <li>
+            <a href="#">Breeches</a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Footwear</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Socks</a>
+          </li>
+          <li>
+            <a href="#">Shoes</a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Featured</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Best Sellers</a>
+          </li>
+          <li>
+            <a href="#">New Arrivals</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mega-menu" id="mega-menu-gear">
+  <div class="container py-4">
+    <div class="row">
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Weapons</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Foils</a>
+          </li>
+          <li>
+            <a href="#">Epees</a>
+          </li>
+          <li>
+            <a href="#">Sabres</a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Protective</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Masks</a>
+          </li>
+          <li>
+            <a href="#">Gloves</a>
+          </li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h6 class="text-uppercase fw-bold mb-3">Storage</h6>
+        <ul class="list-unstyled">
+          <li>
+            <a href="#">Bags</a>
+          </li>
+          <li>
+            <a href="#">Weapon Covers</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+

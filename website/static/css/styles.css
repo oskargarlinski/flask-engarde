@@ -1,0 +1,160 @@
+:root {
+    --fencing-gold: #D4AF37;
+    --fencing-dark: #1C1C1C;
+    --gold-weak: #cd7f32;
+    --gold-moderate: #D4AF37;
+    --gold-strong: #ffdf00;
+}
+
+/* ----------------------------------------
+    Typography & Fonts
+  ---------------------------------------- */
+body {
+    font-family: 'Merriweather', serif;
+}
+
+h1,
+h2,
+h3 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* ----------------------------------------
+    Navbar
+  ---------------------------------------- */
+.navbar {
+    background-color: var(--fencing-dark);
+    position: relative;
+}
+
+.navbar-nav .nav-link {
+    color: white;
+    transition: color 0.5s ease;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--fencing-gold);
+}
+
+/* Navbar Icons */
+.navbar .nav-link i {
+    font-size: 1.2rem;
+    color: white;
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover i {
+    color: var(--fencing-gold);
+}
+
+/* ----------------------------------------
+    Auth Page Backgrounds
+  ---------------------------------------- */
+.login-page,
+.signup-page {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-page {
+    background-image: url("../images/fencing-bg-1.jpeg");
+}
+
+.signup-page {
+    background-image: url("../images/fencing-bg-2.jpeg");
+}
+
+/* ----------------------------------------
+    Footer
+  ---------------------------------------- */
+footer {
+    background-color: var(--fencing-dark);
+    color: white;
+}
+
+footer .navbar-brand,
+footer .brand-name {
+    color: var(--fencing-gold);
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+footer a {
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--fencing-gold);
+}
+
+/* ----------------------------------------
+    Flash Message / Password Strength
+  ---------------------------------------- */
+#password-strength {
+    transition: color 0.4s ease;
+}
+
+/* ---------------------------------------
+            Mega Menu (MEN'S)
+------------------------------------------ */
+.mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: white;
+    padding: 2rem 0;
+    z-index: 1050;
+    border-top: 1px solid #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+    font-family: 'Merriweather', serif;
+    color: var(--fencing-dark);
+
+    /* Transition state */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.mega-menu.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Headings */
+.mega-menu h6 {
+    font-family: 'Playfair Display', serif;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Links */
+.mega-menu a {
+    text-decoration: none;
+    color: var(--fencing-dark);
+    transition: color 0.3s ease;
+    font-size: 0.95rem;
+    display: inline-block;
+    padding: 0.2rem 0;
+}
+
+.mega-menu a:hover {
+    color: var(--fencing-gold);
+    text-decoration: underline;
+}
