@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Checkout</h1>
+
+  <form method="POST">
+    {{ form.csrf_token }}
+    <input type="hidden" name="step" value="{{ step }}">
+
+    <div class="row">
+      <div class="col-md-8">
+        {% if step == 'shipping' %}
+          {% include 'partials/_shipping.html' %}
+        {% elif step == 'payment' %}
+          {% include 'partials/_payment.html' %}
+        {% elif step == 'review' %}
+          {% include 'partials/_review.html' %}
+        {% endif %}
+
+        <div class="mt-4">
+          {% if step != 'shipping' %}
+            <a href="{{ url_for('views.checkout', step=previous_step) }}" class="btn btn-outline-secondary">Back</a>
+          {% endif %}
+          <button type="submit" class="btn btn-dark">
+            {% if step == 'review' %}Place Order{% else %}Continue{% endif %}
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        {% include 'partials/_order_summary.html' %}
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

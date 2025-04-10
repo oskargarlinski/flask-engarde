@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField, EmailField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError, NumberRange
 import re
 
@@ -102,3 +102,33 @@ class AddToCartForm(FlaskForm):
         NumberRange(min=1, message="Must be at least 1")
     ])
     submit = SubmitField("Add to Cart")
+
+
+class ShippingForm(FlaskForm):
+    first_name = StringField("First Name", validators=[
+                             DataRequired(), Length(max=100)])
+    last_name = StringField("Last Name", validators=[
+                            DataRequired(), Length(max=100)])
+    shipping_address = StringField(
+        "Address", validators=[DataRequired(), Length(max=255)])
+    city = StringField("City", validators=[DataRequired()])
+    country = SelectField("Country", choices=[
+        ("England", "England"),
+        ("Scotland", "Scotland"),
+        ("Wales", "Wales"),
+        ("Northern Ireland", "Northern Ireland")
+    ], validators=[DataRequired()])
+    postal_code = StringField("Postcode", validators=[DataRequired()])
+    next = SubmitField("Continue to Payment")
+
+
+class PaymentForm(FlaskForm):
+    card_number = StringField("Card Number", validators=[
+                              DataRequired(), Length(min=16, max=16)])
+    expiry_date = StringField("Expiry Date", validators=[DataRequired()])
+    cvv = StringField("CVV", validators=[DataRequired(), Length(min=3, max=4)])
+    next = SubmitField("Review Order")
+
+
+class ReviewForm(FlaskForm):
+    submit = SubmitField("Place Order")

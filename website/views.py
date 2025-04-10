@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, session, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Product, Category, ProductVariant, VariantOption, VariantValue, VariantCombination
-from .forms import AddToCartForm
+from .models import Product, Category, ProductVariant, VariantOption, VariantValue, Order, OrderItem
+from .forms import AddToCartForm, PaymentForm, ShippingForm, ReviewForm
 from . import db
 
 views = Blueprint('views', __name__)
@@ -137,3 +137,92 @@ def update_cart():
 
     session['cart'] = updated_cart
     return redirect(url_for('views.view_cart'))
+
+
+@views.route('/checkout', methods=['GET', 'POST'])
+@login_required
+def checkout():
+    cart = session.get('cart', [])
+    step = request.values.get('step', 'shipping')
+
+    # 1. Build detailed cart
+    detailed_cart = []
+    for item in cart:
+        variant = ProductVariant.query.get(item['variant_id'])
+        if variant:
+            detailed_cart.append({
+                'variant': variant,
+                'quantity': item['quantity'],
+                'subtotal': variant.price * item['quantity'],
+                'impact': variant.environmental_impact * item['quantity']
+            })
+    total = sum(item['subtotal'] for item in detailed_cart)
+    total_impact = sum(item['impact'] for item in detailed_cart)
+
+    # 2. Step logic
+    if step == 'shipping':
+        form = ShippingForm()
+        if form.validate_on_submit():
+            session['checkout_shipping'] = form.data
+            return redirect(url_for('views.checkout', step='payment'))
+        return render_template("checkout.html", form=form, step='shipping', cart=detailed_cart, total=total, total_impact=total_impact)
+
+    elif step == 'payment':
+        form = PaymentForm()
+        if form.validate_on_submit():
+            session['checkout_payment'] = form.data
+            return redirect(url_for('views.checkout', step='review'))
+        return render_template("checkout.html", form=form, step='payment', cart=detailed_cart, total=total, total_impact=total_impact)
+
+    elif step == 'review':
+        form = ReviewForm()
+        shipping = session.get('checkout_shipping', {})
+        payment = session.get('checkout_payment', {})
+
+        if form.validate_on_submit():
+            # Create order
+            order = Order(
+                user_id=current_user.id,
+                first_name=shipping['first_name'],
+                last_name=shipping['last_name'],
+                email=current_user.email,
+                address=shipping['shipping_address'],
+                city=shipping['city'],
+                country=shipping['country'],
+                postal_code=shipping['postal_code'],
+                total_price=total,
+                total_impact=total_impact
+            )
+            db.session.add(order)
+            db.session.flush()
+
+            for item in cart:
+                variant = ProductVariant.query.get(item['variant_id'])
+                print("Variant ID:", item['variant_id'])
+                print("Requested:", item.get('quantity'))
+                print("In Stock:", variant.stock if variant else "Not Found")
+                if not variant or item['quantity'] > variant.stock:
+                    flash("Stock error. Please review your cart.", "danger")
+                    return redirect(url_for('views.view_cart'))
+                variant.stock -= item['quantity']
+                db.session.add(OrderItem(
+                    order_id=order.id,
+                    variant_id=variant.id,
+                    quantity=item['quantity'],
+                    price=variant.price,
+                    impact=variant.environmental_impact
+                ))
+
+            db.session.commit()
+            session.pop('cart', None)
+            session.pop('checkout_shipping', None)
+            session.pop('checkout_payment', None)
+            flash("Order placed successfully!", "success")
+            return redirect(url_for('views.home'))
+
+        return render_template("checkout.html", form=form, step='review', cart=detailed_cart, total=total, total_impact=total_impact)
+
+@views.route('/clear-session')
+def clear_session():
+    session.clear()
+    return redirect(url_for('views.home'))

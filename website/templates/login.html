@@ -6,20 +6,6 @@
 {% block content %}
   <main class="login-page">
   <div class="p-5 rounded shadow-lg bg-white" style="max-width: 600px; width: 100%;">
-    <!-- Flash messages (in case of login error) -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <p class="text-center fw-medium
-            {% if category == 'success' %}text-success
-            {% elif category == 'danger' %}text-danger
-            {% else %}text-muted{% endif %}">
-            {{ message }}
-          </p>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
-
     <!-- Heading -->
     <div class="text-center mb-4">
       <h1 class="fw-bold" style="font-family: 'Cinzel', serif; color: #D4AF37;">Login</h1>

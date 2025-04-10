@@ -49,6 +49,11 @@
           </tr>
         </tfoot>
       </table>
+      <div class="text-end mt-4">
+        <a href="{{ url_for('views.checkout') }}" class="btn btn-dark btn-lg">
+          Proceed to Checkout
+        </a>
+      </div>
     {% else %}
       <p>Your cart is empty.</p>
     {% endif %}

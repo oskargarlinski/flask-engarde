@@ -84,7 +84,7 @@ class ProductVariant(db.Model):
     stock = db.Column(db.Integer, default=0)
 
     values = db.relationship(
-        'VariantValue', secondary='variant_combinations', backref='variants', lazy='joined')
+        'VariantValue', secondary='variant_combinations', backref='variants', lazy='joined', overlaps="combinations")
 
 
 class VariantCombination(db.Model):
@@ -95,9 +95,9 @@ class VariantCombination(db.Model):
         'variant_values.id'), primary_key=True)
 
     variant = db.relationship('ProductVariant', backref=db.backref(
-        'combinations', cascade='all, delete-orphan'))
+        'combinations', cascade='all, delete-orphan'), overlaps="values,variants")
     value = db.relationship('VariantValue', backref=db.backref(
-        'combinations', cascade='all, delete-orphan'))
+        'combinations', cascade='all, delete-orphan'), overlaps="values,variants")
 
 
 class Order(db.Model):
