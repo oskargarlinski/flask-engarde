@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block title %}
   {{ product.name }}
 {% endblock %}
@@ -7,69 +6,89 @@
 {% block content %}
   <div class="container py-5">
     <div class="row">
+      <!-- Product Image -->
       <div class="col-md-6">
-        <img src="{{ url_for('static', filename='images/products/' ~ product.image_filename) }}" alt="{{ product.name }}" class="img-fluid rounded" />
+        <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" class="img-fluid rounded" alt="{{ product.name }}" />
       </div>
+
+      <!-- Product Info + Form -->
       <div class="col-md-6">
-        <h1 class="mb-3">{{ product.name }}</h1>
-        <p class="mb-4">{{ product.description }}</p>
+        <h1>{{ product.name }}</h1>
+        <p class="text-muted">{{ product.description }}</p>
+        <div class="mb-3">
+          <p>
+            <span id="price-display" class="badge bg-secondary fs-5"></span>
+          </p>
+          <p>
+            <span id="impact-display" class="badge bg-secondary fs-5">—</span>
+          </p>
+          <p>
+            <span id="stock-display" class="badge bg-secondary fs-5">—</span>
+          </p>
+        </div>
 
-        <!-- Price & Environmental Impact -->
-        <h3 id="price">£{{ '%.2f'|format(variants.0.price) }}</h3>
-        <p id="impact">{{ '%.2f'|format(variants.0.environmental_impact) }} kg CO₂</p>
+        <!-- Variant Selection Form -->
+        <form method="POST" action="{{ url_for('views.add_to_cart') }}">
+          {{ form.hidden_tag() }}
 
-        <!-- Variant Selectors -->
-        {% for option in options %}
+          <!-- Hidden field to hold the matched variant ID -->
+          {{ form.variant_id(id='variant_id') }}
+
+          {% for option_name, values in option_values.items() %}
+            <div class="mb-3">
+              <label class="form-label">{{ option_name }}</label>
+              <select class="form-select variant-select" name="{{ option_name }}">
+                {% for value in values %}
+                  <option value="{{ value.value }}">{{ value.value }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+
           <div class="mb-3">
-            <label class="form-label">{{ option.name }}</label>
-            <select class="form-select variant-selector" data-option-id="{{ option.id }}">
-              {% for value in option.values %}
-                <option value="{{ value.id }}">{{ value.value }}</option>
-              {% endfor %}
-            </select>
+            <label class="form-label">{{ form.quantity.label }}</label>
+            {{ form.quantity(class='form-control w-auto d-inline-block') }}
           </div>
-        {% endfor %}
 
-        <button class="btn btn-dark mt-3">Add to Cart</button>
+          {{ form.submit(class='btn btn-dark') }}
+        </form>
       </div>
     </div>
   </div>
 
   <script>
-    const variants = {{ variants | tojson }};
-
-    const priceDisplay = document.getElementById('price')
-    const impactDisplay = document.getElementById('impact')
+    const variantList = {{ variants_json | tojson }};
+  
+    function updatePriceAndImpact() {
+      const selections = Array.from(document.querySelectorAll('.variant-select')).map(select => select.value);
     
-    const selects = document.querySelectorAll('.variant-selector')
-    
-    function getSelectedValues() {
-      return Array.from(selects)
-        .map((select) => parseInt(select.value))
-        .sort((a, b) => a - b)
-    }
-    
-    function findMatchingVariant(selectedValueIds) {
-      return variants.find((variant) => {
-        const sortedIds = [...variant.value_ids].sort((a, b) => a - b)
-        return JSON.stringify(sortedIds) === JSON.stringify(selectedValueIds)
-      })
-    }
-    
-    function updateDisplay() {
-      const selected = getSelectedValues()
-      const match = findMatchingVariant(selected)
-    
+      const match = variantList.find(v =>
+        v.values.length === selections.length &&
+        v.values.every(val => selections.includes(val))
+      );
+  
+      const priceEl = document.getElementById("price-display");
+      const impactEl = document.getElementById("impact-display");
+      const stockEl = document.getElementById("stock-display");
+      const variantInput = document.getElementById("variant_id");
+  
       if (match) {
-        priceDisplay.textContent = `£${match.price.toFixed(2)}`
-        impactDisplay.textContent = `${match.environmental_impact.toFixed(2)} kg CO₂`
+        priceEl.textContent = `£${match.price.toFixed(2)}`;
+        impactEl.textContent = `${match.environmental_impact} kg CO₂`;
+        stockEl.textContent = `${match.stock} in stock!`;
+        variantInput.value = match.id;
+      } else {
+        priceEl.textContent = "—";
+        impactEl.textContent = "—";
+        stockEl.textContent = "—";
+        variantInput.value = "";
       }
     }
-    
-    selects.forEach((select) => {
-      select.addEventListener('change', updateDisplay)
-    })
-    
-    updateDisplay()
+  
+    document.querySelectorAll('.variant-select').forEach(select => {
+      select.addEventListener('change', updatePriceAndImpact);
+    });
+  
+    updatePriceAndImpact(); // Run once on load
   </script>
 {% endblock %}

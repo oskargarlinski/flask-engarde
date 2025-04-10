@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 from flask_login import UserMixin
 from wtforms.validators import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -82,8 +83,8 @@ class ProductVariant(db.Model):
     environmental_impact = db.Column(db.Float, nullable=True)
     stock = db.Column(db.Integer, default=0)
 
-    variant_values = db.relationship(
-        'VariantValue', secondary='variant_combinations', backref='variants')
+    values = db.relationship(
+        'VariantValue', secondary='variant_combinations', backref='variants', lazy='joined')
 
 
 class VariantCombination(db.Model):
@@ -97,3 +98,34 @@ class VariantCombination(db.Model):
         'combinations', cascade='all, delete-orphan'))
     value = db.relationship('VariantValue', backref=db.backref(
         'combinations', cascade='all, delete-orphan'))
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100), nullable=False)
+    postal_code = db.Column(db.String(20), nullable=False)
+    country = db.Column(db.String(100), nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    total_impact = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    items = db.relationship(
+        "OrderItem", backref="order", cascade="all, delete")
+
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_items'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey(
+        'orders.id'), nullable=False)
+    variant_id = db.Column(db.Integer, db.ForeignKey(
+        'product_variants.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    impact = db.Column(db.Float, nullable=False)

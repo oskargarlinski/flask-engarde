@@ -81,11 +81,24 @@ class VariantValueSubForm(FlaskForm):
     values = StringField("Values (comma-separated)",
                          validators=[DataRequired()])
 
+
 class ProductVariantForm(FlaskForm):
     class Meta:
-        csrf=False
-        
-    sku = StringField("SKU", validators=[DataRequired(), Length(max=50)], render_kw={"readonly": True})
+        csrf = False
+
+    sku = StringField("SKU", validators=[DataRequired(), Length(
+        max=50)], render_kw={"readonly": True})
     price = FloatField("Price", validators=[DataRequired()])
-    environmental_impact = FloatField("Environmental Impact (kg CO₂)", validators=[DataRequired()])
-    stock = IntegerField("Stock", validators=[DataRequired(), NumberRange(min=0)])
+    environmental_impact = FloatField(
+        "Environmental Impact (kg CO₂)", validators=[DataRequired()])
+    stock = IntegerField("Stock", validators=[
+                         DataRequired(), NumberRange(min=0)])
+
+
+class AddToCartForm(FlaskForm):
+    variant_id = HiddenField("Variant ID", validators=[DataRequired()])
+    quantity = IntegerField("Quantity", default=1, validators=[
+        DataRequired(),
+        NumberRange(min=1, message="Must be at least 1")
+    ])
+    submit = SubmitField("Add to Cart")

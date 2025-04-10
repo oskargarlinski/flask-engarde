@@ -31,7 +31,7 @@
           {% else %}
             <a href="{{ url_for('auth.login') }}" class="nav-link px-2" title="Login"><i class="fa-solid fa-circle-user"></i></a>
           {% endif %}
-          <a href="#" class="nav-link px-2"><i class="fa-solid fa-cart-shopping"></i></a>
+          <a href="{{url_for('views.view_cart')}}" class="nav-link px-2"><i class="fa-solid fa-cart-shopping"></i></a>
         </div>
       </div>
     </div>
