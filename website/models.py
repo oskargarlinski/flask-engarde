@@ -27,67 +27,73 @@ class User(db.Model, UserMixin):
             raise ValidationError('That email is already registered.')
 
 
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    products = db.relationship('Product', backref='category', lazy=True)
+
+
 class Product(db.Model):
-    __tablename__ = 'product'
+    __tablename__ = 'products'
 
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(50))
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    name = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    image_filename = db.Column(db.String(255))
+    is_variant_parent = db.Column(db.Boolean, default=False)
 
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    image_filename = db.Column(db.String(100), nullable=False)
+    options = db.relationship(
+        'VariantOption', backref='product', cascade="all, delete")
+    variants = db.relationship(
+        'ProductVariant', backref='product', cascade="all, delete")
+
+
+class VariantOption(db.Model):
+    __tablename__ = 'variant_options'
+
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey(
+        'products.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False)  # e.g. "Size", "Hand"
+    values = db.relationship(
+        'VariantValue', backref='option', cascade="all, delete")
+
+
+class VariantValue(db.Model):
+    __tablename__ = 'variant_values'
+
+    id = db.Column(db.Integer, primary_key=True)
+    option_id = db.Column(db.Integer, db.ForeignKey(
+        'variant_options.id'), nullable=False)
+    value = db.Column(db.String(50), nullable=False)
+
+
+class ProductVariant(db.Model):
+    __tablename__ = 'product_variants'
+
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey(
+        'products.id'), nullable=False)
+    sku = db.Column(db.String(50), unique=True)
     price = db.Column(db.Float, nullable=False)
-    environmental_impact = db.Column(db.Float) # e.g., 12.5 (kg CO2 equivalent)
+    environmental_impact = db.Column(db.Float, nullable=True)
+    stock = db.Column(db.Integer, default=0)
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'product',
-        'polymorphic_on': type
-    }
-
-
-class Apparel(Product):
-    __tablename__ = 'apparel'
-
-    id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
-    material = db.Column(db.String(50))
-    certification = db.Column(db.String(50))
-    newton_rating = db.Column(db.Integer)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'apparel'
-    }
+    variant_values = db.relationship(
+        'VariantValue', secondary='variant_combinations', backref='variants')
 
 
-class Glove(Product):
-    __tablename__ = 'glove'
+class VariantCombination(db.Model):
+    __tablename__ = 'variant_combinations'
+    variant_id = db.Column(db.Integer, db.ForeignKey(
+        'product_variants.id'), primary_key=True)
+    value_id = db.Column(db.Integer, db.ForeignKey(
+        'variant_values.id'), primary_key=True)
 
-    id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
-    certification = db.Column(db.String(50))
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'glove'
-    }
-
-
-class Footwear(Product):
-    __tablename__ = 'footwear'
-
-    id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'footwear'
-    }
-
-
-class Weapon(Product):
-    __tablename__ = 'weapon'
-
-    id = db.Column(db.Integer, db.ForeignKey('product.id'), primary_key=True)
-    certification = db.Column(db.String(50))
-
-    # Filtering Fields
-    blade_type = db.Column(db.String(20))  # "Foil", "Epee", "Sabre"
-    
-    __mapper_args__ = {
-        'polymorphic_identity': 'weapon'
-    }
+    variant = db.relationship('ProductVariant', backref=db.backref(
+        'combinations', cascade='all, delete-orphan'))
+    value = db.relationship('VariantValue', backref=db.backref(
+        'combinations', cascade='all, delete-orphan'))

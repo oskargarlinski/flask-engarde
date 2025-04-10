@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, FloatField, IntegerField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError, NumberRange
 import re
 
 
@@ -46,35 +46,46 @@ class LoginForm(FlaskForm):
 
 
 class BaseProductForm(FlaskForm):
+    category = SelectField("Category", coerce=int, validators=[DataRequired()])
     name = StringField("Name", validators=[DataRequired(), Length(max=100)])
     description = StringField("Description", validators=[DataRequired()])
     image = FileField("Product Image", validators=[
         FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Images only!')
     ])
-    price = FloatField("Price (£)", validators=[DataRequired()])
-    environmental_impact = FloatField(
-        "Environmental Impact (kg CO₂)", validators=[DataRequired()])
 
 
-class WeaponForm(BaseProductForm):
-    blade_type = SelectField("Blade Type", choices=[
-        ('', 'Select'), ('Foil', 'Foil'), ('Epee', 'Épée'), ('Sabre', 'Sabre')
-    ], validators=[DataRequired()])
-    certification = StringField("Certification")
-    submit = SubmitField("Add Weapon")
+class SingleOptionForm(FlaskForm):
+    option_name = StringField("Option", validators=[
+                              DataRequired(), Length(max=50)])
+
+    class Meta:
+        csrf = False
 
 
-class ApparelForm(BaseProductForm):
-    material = StringField("Material")
-    certification = StringField("Certification")
-    newton_rating = IntegerField("Newton Rating")
-    submit = SubmitField("Add Apparel")
+class VariantOptionForm(FlaskForm):
+    options = FieldList(FormField(SingleOptionForm), min_entries=1)
+    submit = SubmitField("Save Options")
 
 
-class GloveForm(BaseProductForm):
-    certification = StringField("Certification")
-    submit = SubmitField("Add Glove")
+class ValueEntryForm(Form):
+    value = StringField("Value", validators=[DataRequired(), Length(max=50)])
 
 
-class FootwearForm(BaseProductForm):
-    submit = SubmitField("Add Footwear")
+class VariantValueForm(FlaskForm):
+    option_id = HiddenField("Option ID")
+    values = FieldList(FormField(ValueEntryForm), min_entries=1)
+    submit = SubmitField("Save Values")
+
+
+class VariantValueSubForm(FlaskForm):
+    values = StringField("Values (comma-separated)",
+                         validators=[DataRequired()])
+
+class ProductVariantForm(FlaskForm):
+    class Meta:
+        csrf=False
+        
+    sku = StringField("SKU", validators=[DataRequired(), Length(max=50)], render_kw={"readonly": True})
+    price = FloatField("Price", validators=[DataRequired()])
+    environmental_impact = FloatField("Environmental Impact (kg CO₂)", validators=[DataRequired()])
+    stock = IntegerField("Stock", validators=[DataRequired(), NumberRange(min=0)])

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {{ product.name }}
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-md-6">
+        <img src="{{ url_for('static', filename='images/products/' ~ product.image_filename) }}" alt="{{ product.name }}" class="img-fluid rounded" />
+      </div>
+      <div class="col-md-6">
+        <h1 class="mb-3">{{ product.name }}</h1>
+        <p class="mb-4">{{ product.description }}</p>
+
+        <!-- Price & Environmental Impact -->
+        <h3 id="price">£{{ '%.2f'|format(variants.0.price) }}</h3>
+        <p id="impact">{{ '%.2f'|format(variants.0.environmental_impact) }} kg CO₂</p>
+
+        <!-- Variant Selectors -->
+        {% for option in options %}
+          <div class="mb-3">
+            <label class="form-label">{{ option.name }}</label>
+            <select class="form-select variant-selector" data-option-id="{{ option.id }}">
+              {% for value in option.values %}
+                <option value="{{ value.id }}">{{ value.value }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endfor %}
+
+        <button class="btn btn-dark mt-3">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const variants = {{ variants | tojson }};
+
+    const priceDisplay = document.getElementById('price')
+    const impactDisplay = document.getElementById('impact')
+    
+    const selects = document.querySelectorAll('.variant-selector')
+    
+    function getSelectedValues() {
+      return Array.from(selects)
+        .map((select) => parseInt(select.value))
+        .sort((a, b) => a - b)
+    }
+    
+    function findMatchingVariant(selectedValueIds) {
+      return variants.find((variant) => {
+        const sortedIds = [...variant.value_ids].sort((a, b) => a - b)
+        return JSON.stringify(sortedIds) === JSON.stringify(selectedValueIds)
+      })
+    }
+    
+    function updateDisplay() {
+      const selected = getSelectedValues()
+      const match = findMatchingVariant(selected)
+    
+      if (match) {
+        priceDisplay.textContent = `£${match.price.toFixed(2)}`
+        impactDisplay.textContent = `${match.environmental_impact.toFixed(2)} kg CO₂`
+      }
+    }
+    
+    selects.forEach((select) => {
+      select.addEventListener('change', updateDisplay)
+    })
+    
+    updateDisplay()
+  </script>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Products
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Products</h1>
+    <!-- Display product cards -->
+    <div class="row">
+      <div class="row">
+        {% for product in products %}
+          <div class="col-md-4 mb-4">
+            <div class="card h-100">
+              {% if product.image_filename %}
+                <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" class="card-img-top" alt="{{ product.name }}" />
+              {% endif %}
+              <div class="card-body d-flex flex-column justify-content-between">
+                <div>
+                  <h5 class="card-title">{{ product.name }}</h5>
+                  <p class="card-text">{{ product.description[:100] }}...</p>
+                </div>
+                {% set variant = product.variants|sort(attribute='price')|first %}
+                {% if variant %}
+                  <p class="mt-2">From £{{ '%.2f'|format(variant.price) }}</p>
+                {% else %}
+                  <p class="text-muted">No variants available</p>
+                {% endif %}
+                <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="btn btn-dark mt-2">View Details</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}
