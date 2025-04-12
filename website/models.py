@@ -138,12 +138,14 @@ class OrderItem(db.Model):
     order_id = db.Column(db.Integer, db.ForeignKey(
         'orders.id'), nullable=False)
     variant_id = db.Column(db.Integer, db.ForeignKey(
-        'product_variants.id'), nullable=False)
+        'product_variants.id'), nullable=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=True)
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     impact = db.Column(db.Float, nullable=False)
 
     variant = db.relationship('ProductVariant')
+    product = db.relationship('Product')
 
     @validates('impact')
     def round_impact(self, key, value):

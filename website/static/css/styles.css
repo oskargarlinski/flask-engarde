@@ -11,12 +11,21 @@
   ---------------------------------------- */
 body {
     font-family: 'Merriweather', serif;
+    margin-bottom: 0;
 }
 
 h1,
 h2,
 h3 {
     font-family: 'Playfair Display', serif;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
 }
 
 /* ----------------------------------------
@@ -46,6 +55,37 @@ h3 {
 
 .navbar .nav-link:hover i {
     color: var(--fencing-gold);
+}
+
+.search-wrapper #search-form {
+    width: 250px;
+    display: flex;
+    align-items: center;
+}
+
+.search-wrapper input[type="search"] {
+    font-size: 0.85rem;
+}
+
+/* Smooth transition for the search bar */
+.search-form {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.search-form.show {
+    width: 250px;
+    /* Adjust as needed */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-hidden {
+    display: inline-flex;
+    /* Keeps it in the layout */
 }
 
 /* ----------------------------------------
@@ -78,6 +118,8 @@ h3 {
 footer {
     background-color: var(--fencing-dark);
     color: white;
+    margin-bottom: 0;
+    margin-top: auto;
 }
 
 footer .navbar-brand,
@@ -105,56 +147,42 @@ footer a:hover {
     transition: color 0.4s ease;
 }
 
-/* ---------------------------------------
-            Mega Menu (MEN'S)
------------------------------------------- */
-.mega-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    width: 100%;
-    background-color: white;
-    padding: 2rem 0;
-    z-index: 1050;
-    border-top: 1px solid #ccc;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-
-    font-family: 'Merriweather', serif;
-    color: var(--fencing-dark);
-
-    /* Transition state */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.mega-menu.show {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-}
-
-/* Headings */
-.mega-menu h6 {
-    font-family: 'Playfair Display', serif;
-    font-weight: bold;
-    font-size: 1rem;
-    margin-bottom: 1rem;
-}
-
-/* Links */
-.mega-menu a {
-    text-decoration: none;
-    color: var(--fencing-dark);
-    transition: color 0.3s ease;
-    font-size: 0.95rem;
-    display: inline-block;
-    padding: 0.2rem 0;
-}
-
-.mega-menu a:hover {
+.view-all-btn {
+    background-color: transparent;
     color: var(--fencing-gold);
-    text-decoration: underline;
+    border: 2px solid var(--fencing-gold);
+    font-weight: bold;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+    background-color: var(--fencing-gold);
+    color: #000;
+}
+
+.card-img-top {
+    height: 400px;
+    object-fit: cover;
+    object-position: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glider-contain {
+    overflow-x: hidden;
+}
+
+#product-tooltip {
+    background-color: var(--fencing-dark);
+    color: white;
+    font-size: 0.85rem;
+    pointer-events: none;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: opacity 0.3s ease;
+    min-width: 200px;
+    max-width: 280px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    line-height: 1.4;
 }

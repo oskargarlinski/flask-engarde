@@ -5,9 +5,14 @@
 
 {% block content %}
   <div class="container py-5">
+    {% include 'partials/_flashes.html' %}
     <div class="row">
       <div class="col-md-6">
-        <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" class="img-fluid rounded" alt="{{ product.name }}" />
+        {% if product.image_filename %}
+          <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" class="img-fluid rounded" alt="{{ product.name }}" />
+        {% else %}
+          <img src="{{ url_for('static', filename='images/products/default-product.webp') }}" class="img-fluid rounded" alt="No image available" />
+        {% endif %}
       </div>
 
       <div class="col-md-6">
@@ -17,9 +22,9 @@
         {% if variants %}
           <!-- Variant-based Product -->
           <form method="POST" action="{{ url_for('views.add_to_cart') }}">
-            {{ form.hidden_tag() }}
-            {{ form.product_id(value=product.id) }}
-            {{ form.variant_id(id='variant_id') }}
+            {{ form.csrf_token }}
+            <input type="hidden" name="product_id" value="{{ product.id }}" />
+            <input type="hidden" name="variant_id" id="variant_id" value="" />
 
             {% for option_name, values in option_values.items() %}
               <div class="mb-3">
@@ -81,8 +86,8 @@
         {% else %}
           <!-- Simple Product -->
           <form method="POST" action="{{ url_for('views.add_to_cart') }}">
-            {{ form.hidden_tag() }}
-            {{ form.product_id(value=product.id) }}
+            {{ form.csrf_token }}
+            <input type="hidden" name="product_id" value="{{ product.id }}" />
 
             <p>
               <span class="badge bg-secondary fs-5">£{{ '%.2f'|format(product.price) }}</span>

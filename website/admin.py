@@ -53,16 +53,19 @@ def generate_simple_sku(product_name, category_name):
 
     return f"{prefix}-{name_part}-{random_suffix}"
 
+
 def get_category_tree(parent_id=None, depth=0):
-    categories = Category.query.filter_by(parent_id=parent_id).order_by(Category.name).all()
+    categories = Category.query.filter_by(
+        parent_id=parent_id).order_by(Category.name).all()
     results = []
-    
+
     for cat in categories:
         results.append((cat, depth))
-        
+
         results += get_category_tree(parent_id=cat.id, depth=depth+1)
-    
+
     return results
+
 
 @admin.route('/admin/products', endpoint='products')
 def list_products():
@@ -73,6 +76,12 @@ def list_products():
 @admin.route('/admin/products/<int:product_id>/delete', methods=['POST', 'GET'])
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
+
+    if product.image_filename and product.image_filename != 'default-product.webp':
+        image_path = os.path.join(
+            current_app.config['UPLOAD_FOLDER'], product.image_filename)
+        if os.path.exists(image_path):
+            os.remove(image_path)
 
     # Delete related VariantCombinations and ProductVariants
     variants = ProductVariant.query.filter_by(product_id=product.id).all()
@@ -93,59 +102,6 @@ def delete_product(product_id):
     return redirect(url_for('admin.products'))
 
 
-@admin.route('/admin/seed-categories')
-def seed_categories():
-    from .models import Category
-    existing = Category.query.first()
-    if existing:
-        flash("Categories already seeded.", "info")
-        return redirect(url_for('admin.products'))
-
-    categories = [
-        # ------------------- Weapons -------------------
-        Category(name="Foils", slug="foils"),
-        Category(name="Épées", slug="epees"),
-        Category(name="Sabres", slug="sabres"),
-        Category(name="Practice Weapons", slug="practice-weapons"),
-        Category(name="Weapon Parts", slug="weapon-parts"),
-
-        # ---------------- Protective Gear --------------
-        Category(name="Masks", slug="masks"),
-        Category(name="Gloves", slug="gloves"),
-        Category(name="Chest Protectors", slug="chest-protectors"),
-        Category(name="Plastrons", slug="plastrons"),
-        Category(name="Jackets", slug="jackets"),
-        Category(name="Breeches", slug="breeches"),
-        Category(name="Lames", slug="lames"),
-
-        # ---------------- Clothing & Footwear ----------
-        Category(name="Socks", slug="socks"),
-        Category(name="Shoes", slug="shoes"),
-
-        # ---------------- Electric Gear ----------------
-        Category(name="Body Cords", slug="body-cords"),
-        Category(name="Scoring Equipment", slug="scoring-equipment"),
-
-        # ---------------- Bags & Cases -----------------
-        Category(name="Weapon Bags", slug="weapon-bags"),
-        Category(name="Roll Bags", slug="roll-bags"),
-        Category(name="Backpacks", slug="backpacks"),
-
-        # ---------------- Tools & Maintenance ----------
-        Category(name="Tools", slug="tools"),
-        Category(name="Tape", slug="tape"),
-        Category(name="Testers", slug="testers"),
-
-        # ---------------- Miscellaneous ----------------
-        Category(name="Miscellaneous", slug="misc"),
-    ]
-
-    db.session.add_all(categories)
-    db.session.commit()
-    flash("Default categories seeded successfully!", "success")
-    return redirect(url_for('admin.products'))
-
-
 @admin.route('/admin/products/simple/<int:id>/edit', methods=['GET', 'POST'])
 def edit_simple_product(id):
     product = Product.query.get_or_404(id)
@@ -158,6 +114,21 @@ def edit_simple_product(id):
     form.category.data = product.category_id
 
     if form.validate_on_submit():
+        if form.image.data:
+            # Delete old image if it exists and isn't the default
+            if product.image_filename and product.image_filename != 'default-product.webp':
+                old_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER'], product.image_filename)
+                if os.path.exists(old_path):
+                    os.remove(old_path)
+
+            # Save new image
+            filename = secure_filename(form.image.data.filename)
+            image_path = os.path.join(
+                current_app.config['UPLOAD_FOLDER'], filename)
+            form.image.data.save(image_path)
+            product.image_filename = filename
+
         product.name = form.name.data
         product.description = form.description.data
         product.category_id = form.category.data
@@ -193,9 +164,18 @@ def edit_variant_product(id):
             product.category_id = form.category.data
 
             if form.image.data:
+                # Delete old image if it exists and isn't the default
+                if product.image_filename and product.image_filename != 'default-product.webp':
+                    old_path = os.path.join(
+                        current_app.config['UPLOAD_FOLDER'], product.image_filename)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+
+                # Save new image
                 filename = secure_filename(form.image.data.filename)
-                form.image.data.save(os.path.join(
-                    current_app.config['UPLOAD_FOLDER'], filename))
+                image_path = os.path.join(
+                    current_app.config['UPLOAD_FOLDER'], filename)
+                form.image.data.save(image_path)
                 product.image_filename = filename
 
             # Update variant info
@@ -240,7 +220,14 @@ def wizard_step1():
             'environmental_impact', None)
 
     if form.validate_on_submit():
-        # Save data to session
+        image_filename = None
+        if form.image.data:
+            filename = secure_filename(form.image.data.filename)
+            image_path = os.path.join(
+                current_app.config['UPLOAD_FOLDER'], filename)
+            form.image.data.save(image_path)
+            image_filename = filename
+
         session['new_product'] = {
             "name": form.name.data,
             "description": form.description.data,
@@ -249,6 +236,7 @@ def wizard_step1():
             "price": form.price.data,
             "stock": form.stock.data,
             "environmental_impact": form.environmental_impact.data,
+            "image_filename": image_filename
         }
         # If it's variant-based, go to step2; else skip straight to final
         if form.is_variant_parent.data:
@@ -399,7 +387,8 @@ def wizard_finish():
         is_variant_parent=wizard_data['is_variant_parent'],
         price=wizard_data['price'] if not wizard_data['is_variant_parent'] else None,
         stock=wizard_data['stock'] if not wizard_data['is_variant_parent'] else None,
-        environmental_impact=wizard_data['environmental_impact'] if not wizard_data['is_variant_parent'] else None
+        environmental_impact=wizard_data['environmental_impact'] if not wizard_data['is_variant_parent'] else None,
+        image_filename=wizard_data['image_filename']
     )
     db.session.add(product)
     db.session.flush()
@@ -532,7 +521,7 @@ def admin_edit_category(cat_id):
 @admin.route("admin/category/<int:cat_id>/delete", methods=["POST"])
 def admin_delete_category(cat_id):
     cat = Category.query.get_or_404(cat_id)
-    
+
     if cat.children or cat.products:
         flash("Cannot delete a category that has subcategories or products!", "danger")
         return redirect(url_for('admin.admin_list_categories'))
@@ -549,5 +538,5 @@ def admin_delete_category(cat_id):
     delete_subtree(cat)
     db.session.commit()
     flash("Category (and any subcategories) deleted! ", "success")
-    
+
     return redirect(url_for('admin.admin_list_categories'))

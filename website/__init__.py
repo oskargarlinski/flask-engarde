@@ -23,6 +23,17 @@ def create_app():
     app.register_blueprint(views, url_prefix='/')
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(admin, url_prefix='/')
+    
+    
+    @app.template_filter('min_price')
+    def min_price(variants):
+        return min((v.price for v in variants if v.price is not None), default=None)
+
+    @app.template_filter('min_impact')
+    def min_impact(variants):
+        return min((v.environmental_impact for v in variants if v.environmental_impact is not None), default=None)
+
+
 
     with app.app_context():
         db.create_all()

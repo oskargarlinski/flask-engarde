@@ -5,6 +5,7 @@
 
 {% block content %}
   <div class="container py-5">
+    {% include 'partials/_flashes.html' %}
     <h1 class="mb-4">Order History</h1>
     {% if orders %}
       {% for order in orders %}
@@ -21,7 +22,15 @@
             </p>
             <ul class="list-group list-group-flush">
               {% for item in order.items %}
-                <li class="list-group-item">{{ item.variant.product.name }} ({{ item.variant.sku }}) – Qty: {{ item.quantity }} – £{{ '%.2f'|format(item.price) }}</li>
+                <li class="list-group-item">
+                  {% if item.variant %}
+                    {{ item.variant.product.name }} ({{ item.variant.sku }})
+                    <br />
+                    <small class="text-muted">{{ item.variant.values|map(attribute='value')|join(', ') }}</small>
+                  {% elif item.product %}
+                    {{ item.product.name }} ({{ item.product.sku }})
+                  {% endif %}– Qty: {{ item.quantity }} – £{{ '%.2f'|format(item.price) }}
+                </li>
               {% endfor %}
             </ul>
           </div>

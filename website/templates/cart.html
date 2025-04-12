@@ -3,6 +3,7 @@
 
 {% block content %}
   <div class="container py-5">
+    {% include 'partials/_flashes.html' %}
     <h1 class="mb-4">Shopping Cart</h1>
 
     {% if cart %}
@@ -21,16 +22,33 @@
         <tbody>
           {% for item in cart %}
             <tr>
-              <td>{{ item.variant.product.name }} <a href="{{ url_for('views.product_detail', product_id=item.variant.product.id) }}" class="btn btn-sm btn-outline-secondary">
-                Change Options
-              </a></td>
-              <td>{{ item.variant.sku }}</td>
-              <td>£{{ '%.2f'|format(item.variant.price) }}</td>
+              <td>
+                {% if item.variant is defined %}
+                  {{ item.variant.product.name }}
+                  <a href="{{ url_for('views.product_detail', product_id=item.variant.product.id) }}" class="btn btn-sm btn-outline-secondary">Change Options</a>
+                {% elif item.product is defined %}
+                  {{ item.product.name }}
+                {% endif %}
+              </td>
+        
+              <td>
+                {{ item.variant.sku if item.variant is defined else item.product.sku }}
+              </td>
+        
+              <td>
+                £{{ '%.2f'|format(item.variant.price if item.variant is defined else item.product.price) }}
+              </td>
+        
               <td>
                 <form method="POST" action="{{ url_for('views.update_cart') }}" class="d-flex align-items-center gap-2">
-                  <input type="hidden" name="variant_id" value="{{ item.variant.id }}">
+                  {% if item.variant is defined %}
+                    <input type="hidden" name="variant_id" value="{{ item.variant.id }}">
+                  {% else %}
+                    <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                  {% endif %}
                   <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control form-control-sm" style="width: 70px;">
               </td>
+        
               <td>£{{ '%.2f'|format(item.subtotal) }}</td>
               <td>{{ item.impact|round(2) }} kg CO₂</td>
               <td>
@@ -40,7 +58,7 @@
               </td>
             </tr>
           {% endfor %}
-        </tbody>
+        </tbody>        
         <tfoot class="table-light">
           <tr>
             <td colspan="4" class="text-end fw-bold">Total:</td>

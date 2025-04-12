@@ -4,61 +4,64 @@
 {% endblock %}
 
 {% block content %}
-  <main class="login-page">
-  <div class="p-5 rounded shadow-lg bg-white" style="max-width: 600px; width: 100%;">
-    <!-- Heading -->
-    <div class="text-center mb-4">
-      <h1 class="fw-bold" style="font-family: 'Cinzel', serif; color: #D4AF37;">Login</h1>
-      <p class="text-muted">Sign in to your En Garde account</p>
+<main class="login-page">
+  <div class="container" style="max-width: 600px;">
+    {% include 'partials/_flashes.html' %}
+    <!-- Login Form Card -->
+    <div class="p-5 rounded shadow-lg bg-white">
+      <!-- Heading -->
+      <div class="text-center mb-4">
+        <h1 class="fw-bold" style="font-family: 'Cinzel', serif; color: #D4AF37;">Login</h1>
+        <p class="text-muted">Sign in to your En Garde account</p>
+      </div>
+
+      <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-3">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control" + (' is-invalid' if form.email.errors else ''), placeholder="you@example.com") }}
+          {% for error in form.email.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3">
+          {{ form.password.label(class="form-label") }}
+          {{ form.password(class="form-control" + (' is-invalid' if form.password.errors else ''), placeholder="Enter your password") }}
+          {% for error in form.password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="mb-3 form-check">
+          {{ form.remember(class="form-check-input") }}
+          {{ form.remember.label(class="form-check-label") }}
+        </div>
+
+        <div class="d-grid mb-3">
+          {{ form.submit(class="btn btn-dark", style="background-color: #D4AF37; border: none;") }}
+        </div>
+
+        <div class="text-center">
+          <p class="mb-0 text-muted">
+            Don't have an account?
+            <a href="{{ url_for('auth.sign_up') }}" class="text-decoration-none" style="color: #D4AF37;">Register here</a>
+          </p>
+        </div>
+      </form>
     </div>
-
-    <!-- Login Form -->
-    <form method="POST">
-      {{ form.hidden_tag() }}
-
-      <div class="mb-3">
-        {{ form.email.label(class="form-label") }}
-        {{ form.email(class="form-control" + (' is-invalid' if form.email.errors else ''), placeholder="you@example.com") }}
-        {% for error in form.email.errors %}
-          <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="mb-3">
-        {{ form.password.label(class="form-label") }}
-        {{ form.password(class="form-control" + (' is-invalid' if form.password.errors else ''), placeholder="Enter your password") }}
-        {% for error in form.password.errors %}
-          <div class="text-danger small">{{ error }}</div>
-        {% endfor %}
-      </div>
-
-      <div class="mb-3 form-check">
-        {{ form.remember(class="form-check-input") }}
-        {{ form.remember.label(class="form-check-label") }}
-      </div>
-
-      <div class="d-grid mb-3">
-        {{ form.submit(class="btn btn-dark", style="background-color: #D4AF37; border: none;") }}
-      </div>
-
-      <div class="text-center">
-        <p class="mb-0 text-muted">Don't have an account?
-          <a href="{{ url_for('auth.sign_up') }}" class="text-decoration-none" style="color: #D4AF37;">Register here</a>
-        </p>
-      </div>
-    </form>
   </div>
 </main>
 
-
-  <script>
-    setTimeout(() => {
-      const flash = document.getElementById('flash-message')
-      if (flash) {
-        flash.style.transition = 'opacity 0.5s ease-out'
-        flash.style.opacity = '0'
-        setTimeout(() => flash.remove(), 500)
-      }
-    }, 3000)
-  </script>
+<script>
+  setTimeout(() => {
+    const flash = document.querySelector('.alert');
+    if (flash) {
+      flash.style.transition = 'opacity 0.5s ease-out';
+      flash.style.opacity = '0';
+      setTimeout(() => flash.remove(), 500);
+    }
+  }, 3000);
+</script>
 {% endblock %}

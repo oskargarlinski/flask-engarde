@@ -1,9 +1,136 @@
 {% extends 'base.html' %}
-{% block title %}
-  Home
-{% endblock %}
-
+{% block title %}Home{% endblock %}
 
 {% block content %}
-  <h1>Home Page</h1>
+{% include 'partials/_flashes.html' %}
+<div class="glider-contain my-5">
+  <div class="glider">
+    {% for product in products %}
+        <div class="px-2" style="width: 300px;">
+          <div class="card h-100 bg-dark text-white border-0 shadow-sm product-card" data-product-id="{{ product.id }}">
+            <a href="{{ url_for('views.product_detail', product_id=product.id) }}">
+              <img src="{{ url_for('static', filename='images/products/' ~ (product.image_filename if product.image_filename and product.image_filename != 'None' else 'default-product.webp')) }}"
+                  class="card-img-top" alt="{{ product.name }}">
+            </a>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">
+                <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="text-decoration-none text-white">{{ product.name }}</a>
+              </h5>
+              <p class="mb-1"><strong>Price:</strong>
+                {% if product.is_variant_parent %}
+                  From £{{ '%.2f'|format(product.variants|min_price) }}
+                {% else %}
+                  £{{ '%.2f'|format(product.price) }}
+                {% endif %}
+              </p>
+              <p class="text-success small mb-3"><strong>Impact:</strong>
+                {% if product.is_variant_parent %}
+                  {{ '%.2f'|format(product.variants|min_impact) }} kg CO₂
+                {% else %}
+                  {{ '%.2f'|format(product.environmental_impact) }} kg CO₂
+                {% endif %}
+              </p>
+
+              <form method="POST" action="{{ url_for('views.add_to_cart') }}" class="mt-auto">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="hidden" name="variant_id" value="">
+                <div class="input-group mb-2">
+                  <input type="number" name="quantity" class="form-control form-control-sm" value="1" min="1">
+                  <button class="btn btn-outline-light btn-sm" type="submit">Add</button>
+                </div>
+              </form>
+
+              <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="btn btn-outline-light btn-sm w-100">View</a>
+            </div>
+          </div>
+        </div>
+    {% endfor %}
+  </div>
+
+  <!-- Arrows -->
+  <button class="glider-prev btn btn-sm btn-light">«</button>
+  <button class="glider-next btn btn-sm btn-light">»</button>
+
+  <!-- Dots -->
+  <div role="tablist" class="glider-dots mt-2"></div>
+</div>
+
+<div id="product-tooltip" class="position-absolute border rounded p-2 shadow-sm d-none" style="z-index: 9999; max-width: 300px;"></div>
+<div class="py-5 mt-4 text-center">
+  <a href="{{ url_for('views.products') }}" class="btn btn-lg view-all-btn">View All Products<i class="fa fa-arrow-right ms-2"></i></a>
+</div>
+
+
+
+
+<script>
+  let glider;
+  let autoplayInterval;
+
+  function startAutoplay() {
+    autoplayInterval = setInterval(() => {
+      if (glider) glider.scrollItem('next');
+    }, 4000);
+  }
+
+  function stopAutoplay() {
+    clearInterval(autoplayInterval);
+  }
+
+  window.addEventListener('load', function () {
+    glider = new Glider(document.querySelector('.glider'), {
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      draggable: true,
+      dots: '.glider-dots',
+      arrows: {
+        prev: '.glider-prev',
+        next: '.glider-next'
+      },
+      duration: 0.5,
+      scrollLock: true,
+      rewind: true,
+      responsive: [
+        { breakpoint: 768, settings: { slidesToShow: 2 } },
+        { breakpoint: 1024, settings: { slidesToShow: 3 } }
+      ]
+    });
+
+    startAutoplay();
+
+    const gliderContainer = document.querySelector('.glider-contain');
+    gliderContainer.addEventListener('mouseenter', stopAutoplay);
+    gliderContainer.addEventListener('mouseleave', startAutoplay);
+  });
+
+  const tooltip = document.getElementById("product-tooltip");
+
+  document.querySelectorAll(".product-card").forEach(card => {
+    card.addEventListener("mouseenter", async (e) => {
+      const productId = card.dataset.productId;
+
+      try {
+        const res = await fetch(`product-info/${productId}`);
+        const data = await res.json();
+
+        tooltip.innerHTML = `<strong>${data.name}</strong><br><small>${data.description}</small>`;
+        tooltip.classList.remove("d-none");
+      } catch (err) {
+        tooltip.innerHTML = `<em>Error loading description.</em>`;
+        tooltip.classList.remove("d-none");
+      }
+    });
+
+    card.addEventListener("mousemove", (e) => {
+      tooltip.style.left = e.pageX + 15 + "px";
+      tooltip.style.top = e.pageY + "px";
+    });
+
+    card.addEventListener("mouseleave", () => {
+      tooltip.classList.add("d-none");
+    });
+  });
+</script>
+
+
 {% endblock %}

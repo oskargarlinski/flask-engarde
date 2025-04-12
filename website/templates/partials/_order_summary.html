@@ -1,20 +1,33 @@
-<div class="card">
-    <div class="card-header"><strong>Order Summary</strong></div>
-    <ul class="list-group list-group-flush">
-      {% for item in cart %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          {{ item.variant.sku }} × {{ item.quantity }}
-          <span>£{{ '%.2f'|format(item.subtotal) }}</span>
-        </li>
-      {% endfor %}
-      <li class="list-group-item d-flex justify-content-between">
-        <strong>Total</strong>
-        <strong>£{{ '%.2f'|format(total) }}</strong>
-      </li>
-      <li class="list-group-item d-flex justify-content-between">
-        <span>Impact</span>
-        <span>{{ total_impact }} kg CO₂</span>
-      </li>
-    </ul>
-  </div>
-  
+<ul class="list-group mb-3">
+  {% for item in cart %}
+    <li class="list-group-item d-flex justify-content-between align-items-start">
+      <div>
+        <div class="fw-bold">
+          {{ item.variant.product.name if item.variant else item.product.name }}
+        </div>
+        {% if item.variant %}
+          <small class="text-muted">
+            SKU: {{ item.variant.sku }}<br>
+            {{ item.variant.values | map(attribute='value') | join(', ') }}
+          </small>
+        {% elif item.product %}
+          <small class="text-muted">
+            SKU: {{ item.product.sku }}
+          </small>
+        {% endif %}
+        <br>
+        <small>{{ item.quantity }} × £{{ '%.2f'|format(item.variant.price if item.variant else item.product.price) }}</small>
+      </div>
+      <span>£{{ '%.2f'|format(item.subtotal) }}</span>
+    </li>
+  {% endfor %}
+
+  <li class="list-group-item d-flex justify-content-between">
+    <strong>Total</strong>
+    <strong>£{{ '%.2f'|format(total) }}</strong>
+  </li>
+  <li class="list-group-item d-flex justify-content-between">
+    <span>Environmental Impact</span>
+    <span>{{ total_impact|round(2) }} kg CO₂</span>
+  </li>
+</ul>

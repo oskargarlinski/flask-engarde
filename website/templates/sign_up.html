@@ -5,73 +5,73 @@
 
 {% block content %}
   <main class="signup-page">
-      <!-- Heading -->
-      <div class="text-center mb-4">
-        <h1 class="fw-bold" style="font-family: 'Cinzel', serif; color: #D4AF37;">Create Account</h1>
-        <p class="text-muted">Join the En Garde community and gear up in style.</p>
+    <!-- Centered white form box -->
+    <div class="container h-100 d-flex justify-content-center align-items-center" style="position: relative; z-index: 1;">
+      {% include 'partials/_flashes.html' %}
+      <div class="bg-white rounded shadow p-4 p-md-5" style="max-width: 500px; width: 100%;">
+        <!-- Heading -->
+        <div class="text-center mb-4">
+          <h2 class="fw-bold" style="color: #D4AF37;">Create Account</h2>
+          <p class="text-muted mb-0">Join the En Garde community and gear up in style.</p>
+        </div>
+
+        <!-- Sign Up Form -->
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              {{ form.first_name.label(class='form-label') }}
+              {{ form.first_name(class='form-control', placeholder='Sam') }}
+              {% for error in form.first_name.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6 mb-3">
+              {{ form.last_name.label(class='form-label') }}
+              {{ form.last_name(class='form-control', placeholder='Smith') }}
+              {% for error in form.last_name.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.email.label(class='form-label') }}
+            {{ form.email(class='form-control', placeholder='you@example.com') }}
+            {% for error in form.email.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.password.label(class='form-label') }}
+            {{ form.password(class='form-control', id='password', placeholder='Enter a strong password') }}
+            <small class="form-text text-muted">Use 8+ characters with a mix of uppercase, lowercase, numbers, and symbols.</small>
+            <div id="password-strength" class="mt-2 small fw-bold"></div>
+            {% for error in form.password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.confirm_password.label(class='form-label') }}
+            {{ form.confirm_password(class='form-control', placeholder='Re-enter your password') }}
+            {% for error in form.confirm_password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="d-grid mb-3">{{ form.submit(class='btn', style='background-color: #D4AF37; color: white; border: none;') }}</div>
+
+          <div class="text-center">
+            <p class="mb-0 text-muted">
+              Already have an account?
+              <a href="{{ url_for('auth.login') }}" class="text-decoration-none" style="color: #D4AF37;">Sign in here</a>
+            </p>
+          </div>
+        </form>
       </div>
-
-      <!-- Sign Up Form -->
-      <form method="POST" novalidate>
-        {{ form.hidden_tag() }}
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            {{ form.first_name.label(class='form-label') }}
-            {{ form.first_name(class='form-control', placeholder='Sam') }}
-            {% for error in form.first_name.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-          </div>
-          <div class="col-md-6 mb-3">
-            {{ form.last_name.label(class='form-label') }}
-            {{ form.last_name(class='form-control', placeholder='Smith') }}
-            {% for error in form.last_name.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div class="mb-3">
-          {{ form.email.label(class='form-label') }}
-          {{ form.email(class='form-control', placeholder='you@example.com') }}
-          {% for error in form.email.errors %}
-            <div class="text-danger small">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          {{ form.password.label(class='form-label') }}
-          {{ form.password(class='form-control', id='password', placeholder='Enter a strong password') }}
-
-          <small id="passwordHelp" class="form-text text-muted">Use 8+ characters with a mix of uppercase, lowercase, numbers, and symbols.</small>
-
-          <!-- Live strength feedback -->
-          <div id="password-strength" class="mt-2 small fw-bold"></div>
-
-          {% for error in form.password.errors %}
-            <div class="text-danger small">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <div class="mb-3">
-          {{ form.confirm_password.label(class='form-label') }}
-          {{ form.confirm_password(class='form-control', placeholder='Re-enter your password') }}
-          {% for error in form.confirm_password.errors %}
-            <div class="text-danger small">{{ error }}</div>
-          {% endfor %}
-        </div>
-
-        <!-- Submit -->
-        <div class="d-grid mb-3">{{ form.submit(class='btn btn-dark', style='background-color: #D4AF37; border: none;') }}</div>
-
-        <!-- Already have an account -->
-        <div class="text-center">
-          <p class="mb-0 text-muted">
-            Already have an account?
-            <a href="{{ url_for('auth.login') }}" class="text-decoration-none" style="color: #D4AF37;">Sign in here</a>
-          </p>
-        </div>
-      </form>
     </div>
   </main>
 
@@ -102,18 +102,18 @@
       let color = ''
       if (strength <= 2) {
         text = 'Weak'
-        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-weak');
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-weak')
       } else if (strength === 3 || strength === 4) {
         text = 'Moderate'
-        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-moderate');
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-moderate')
       } else if (strength === 5) {
         text = 'Strong'
-        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-strong');
+        color = getComputedStyle(document.documentElement).getPropertyValue('--gold-strong')
       }
     
       strengthDisplay.textContent = `Password Strength: ${text}`
       strengthDisplay.className = `mt-2 small fw-bold`
-      strengthDisplay.style.color = color;
+      strengthDisplay.style.color = color
     })
   </script>
 {% endblock %}
