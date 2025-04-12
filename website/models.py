@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, validates
 from flask_login import UserMixin
 from wtforms.validators import ValidationError
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -30,11 +30,16 @@ class User(db.Model, UserMixin):
 
 class Category(db.Model):
     __tablename__ = 'categories'
+    
     id = db.Column(db.Integer, primary_key=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     slug = db.Column(db.String(100), unique=True, nullable=False)
+    
+    parent = db.relationship('Category', backref='children', remote_side=[id] )
     products = db.relationship('Product', backref='category', lazy=True)
-
+    
+    
 
 class Product(db.Model):
     __tablename__ = 'products'
@@ -43,6 +48,10 @@ class Product(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
+    price = db.Column(db.Float, nullable=True)
+    sku = db.Column(db.String(50), unique=True, nullable=True)
+    environmental_impact = db.Column(db.Float, nullable=True)
+    stock = db.Column(db.Integer, nullable=True)
     image_filename = db.Column(db.String(255))
     is_variant_parent = db.Column(db.Boolean, default=False)
 
@@ -118,6 +127,10 @@ class Order(db.Model):
     items = db.relationship(
         "OrderItem", backref="order", cascade="all, delete")
 
+    @validates('impact')
+    def round_total_impact(self, key, value):
+        return round(value, 2)
+
 
 class OrderItem(db.Model):
     __tablename__ = 'order_items'
@@ -129,3 +142,9 @@ class OrderItem(db.Model):
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     impact = db.Column(db.Float, nullable=False)
+
+    variant = db.relationship('ProductVariant')
+
+    @validates('impact')
+    def round_impact(self, key, value):
+        return round(value, 2)

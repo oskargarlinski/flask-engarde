@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}
+  Edit Product
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Edit Product (No Variants)</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+
+      <div class="mb-3">{{ form.category.label(class='form-label') }}
+        {{ form.category(class='form-select') }}</div>
+
+      <div class="mb-3">{{ form.name.label(class='form-label') }}
+        {{ form.name(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.description.label(class='form-label') }}
+        {{ form.description(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.price.label(class='form-label') }}
+        {{ form.price(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.environmental_impact.label(class='form-label') }}
+        {{ form.environmental_impact(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.stock.label(class='form-label') }}
+        {{ form.stock(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.image.label(class='form-label') }}
+        {{ form.image(class='form-control') }}</div>
+
+      <button type="submit" class="btn btn-dark">Save Changes</button>
+      <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+{% endblock %}

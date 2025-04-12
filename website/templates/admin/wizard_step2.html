@@ -1,0 +1,62 @@
+<!-- templates/admin/wizard_step2.html -->
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Step 2: Define Variant Options</h1>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    {% for error in form.errors.values() %}
+      <div class="text-danger">{{ error }}</div>
+    {% endfor %}
+
+    <div id="field-list">
+      {% for subform in form.options %}
+        <div class="row mb-3" id="option-{{ loop.index0 }}">
+            <div class="d-flex align-items-start">
+                {{ subform.option_name(class="form-control", placeholder="e.g. Size") }}
+                <button type="button" class="btn btn-danger ms-2" onclick="removeOption({{ loop.index0 }})">Remove</button>
+            </div>
+            {% for error in subform.option_name.errors %}
+                <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="addOption()">Add Another Option</button>
+
+    <button type="submit" class="btn btn-dark">Next</button>
+    <a href="{{ url_for('admin.wizard_cancel') }}" class="btn btn-secondary ms-2">Cancel</a>
+  </form>
+</div>
+
+<script>
+    function addOption() {
+        const fieldList = document.getElementById('field-list');
+        const newIndex = fieldList.children.length;
+
+        const newDiv = document.createElement('div');
+        newDiv.className = "row mb-3";
+        newDiv.id = `option-${newIndex}`;
+
+        newDiv.innerHTML = `
+        <div class="d-flex align-items-start">
+          <input type="text" name="options-${newIndex}-option_name" 
+                 class="form-control flex-grow-1" placeholder="e.g. Size" />
+          <button type="button" class="btn btn-danger ms-2" onclick="removeOption(${newIndex})">
+            Remove
+          </button>
+        </div>
+      `;
+
+        fieldList.appendChild(newDiv)
+    }
+    
+    function removeOption(index) {
+        const row = document.getElementById(`option-${index}`);
+        if (row) row.remove();
+    }
+</script>
+{% endblock %}

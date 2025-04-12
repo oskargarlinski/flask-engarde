@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}
+  Edit Product with Variants
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Edit Product with Variants</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+      {{ form.hidden_tag() }}
+
+      <div class="mb-3">{{ form.category.label(class='form-label') }}
+        {{ form.category(class='form-select') }}</div>
+
+      <div class="mb-3">{{ form.name.label(class='form-label') }}
+        {{ form.name(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.description.label(class='form-label') }}
+        {{ form.description(class='form-control') }}</div>
+
+      <div class="mb-3">{{ form.image.label(class='form-label') }}
+        {{ form.image(class='form-control') }}</div>
+
+      <hr />
+      <h4 class="mb-3">Edit Variants</h4>
+
+      {% for variant_form, variant in variant_forms %}
+        <div class="border rounded p-3 mb-4">
+          <h6>{{ variant.sku }}</h6>
+          {% for value in variant.variant_values %}
+            <span class="badge bg-secondary">{{ value.value }}</span>
+          {% endfor %}
+
+          <div class="row mt-3">
+            <div class="col-md-4">{{ variant_form.price.label(class='form-label') }}
+              {{ variant_form.price(class='form-control') }}</div>
+            <div class="col-md-4">{{ variant_form.environmental_impact.label(class='form-label') }}
+              {{ variant_form.environmental_impact(class='form-control') }}</div>
+            <div class="col-md-4">{{ variant_form.stock.label(class='form-label') }}
+              {{ variant_form.stock(class='form-control') }}</div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-dark">Save All Changes</button>
+      <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+{% endblock %}

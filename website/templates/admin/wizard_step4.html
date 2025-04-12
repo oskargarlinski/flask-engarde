@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">Step 4: Define Variant Prices/Stock</h1>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    {% for subform in form.variants %}
+      <div class="border p-3 mb-3">
+        <h5>Variant {{ loop.index }}: 
+          {{ subform.combo_str.data }}
+        </h5>
+
+        {% for field_name, field in subform._fields.items() %}
+          {% for error in field.errors %}
+            <div class="text-danger">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
+
+        {{ subform.combo_str(type="hidden") }}
+
+        <div class="mb-2">
+          {{ subform.price.label }} 
+          {{ subform.price(class="form-control") }}
+        </div>
+
+        <div class="mb-2">
+          {{ subform.environmental_impact.label }}
+          {{ subform.environmental_impact(class="form-control") }}
+        </div>
+
+        <div class="mb-2">
+          {{ subform.stock.label }}
+          {{ subform.stock(class="form-control") }}
+        </div>
+      </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-dark">Save & Next</button>
+    <a href="{{ url_for('admin.wizard_cancel') }}" class="btn btn-secondary ms-2">
+      Cancel
+    </a>
+  </form>
+</div>
+{% endblock %}

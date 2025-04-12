@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h1>Manage Categories</h1>
+  <a href="{{ url_for('admin.admin_new_category') }}" class="btn btn-dark mb-3">+ Add New Category</a>
+
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Parent</th>
+        <th>Children</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cat, depth in cat_tree %}
+        <tr>
+          <td>
+            {{ ("&nbsp;&nbsp;&nbsp;" * depth)| safe }}
+            {{cat.name }}
+          </td>
+          <td>{{ cat.slug }}</td>
+          <td>
+            {% if cat.parent %}
+              {{ cat.parent.name }}
+            {% else %}
+              (No parent)
+            {% endif %}
+          </td>
+          <td>
+            {% if cat.children %}
+              {{ cat.children|length }} subcategories
+            {% else %}
+              0
+            {% endif %}
+          </td>
+          <td class="d-flex gap-2 align-items-start">
+            <a href="{{ url_for('admin.admin_edit_category', cat_id=cat.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form action="{{ url_for('admin.admin_delete_category', cat_id=cat.id) }}" method="POST" onsubmit="return confirm('Really delete category and all subcategories/products?');">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

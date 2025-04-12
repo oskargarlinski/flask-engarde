@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, session, redirect, url_for
+from flask import Blueprint, render_template, request, flash, session, redirect, url_for, abort
 from flask_login import login_required, current_user
 from .models import Product, Category, ProductVariant, VariantOption, VariantValue, Order, OrderItem
 from .forms import AddToCartForm, PaymentForm, ShippingForm, ReviewForm
@@ -63,18 +63,24 @@ def product_detail(product_id):
 @views.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
     form = AddToCartForm()
-    if form.validate_on_submit():
-        variant_id = int(form.variant_id.data)
-        quantity = int(form.quantity.data)
+    if not form.validate_on_submit():
+        flash("Invalid form submission", "danger")
+        return redirect(request.referrer or url_for('views.home'))
 
-        variant = ProductVariant.query.get_or_404(variant_id)
+    quantity = int(form.quantity.data)
+    variant_id = form.variant_id.data
+    product_id = int(form.product_id.data)
+    cart = session.get('cart', [])
+
+    if variant_id:  # Product with variants
+        variant = ProductVariant.query.get_or_404(int(variant_id))
+
         if quantity > variant.stock:
             flash(f"Only {variant.stock} items left in stock!", "warning")
-            return redirect(url_for('views.product_detail', product_id=variant.product_id))
+            return redirect(url_for("views.product_detail", product_id=variant.product_id))
 
-        cart = session.get('cart', [])
         for item in cart:
-            if item['variant_id'] == variant_id:
+            if item.get("variant_id") == variant.id:
                 if item['quantity'] + quantity > variant.stock:
                     flash(
                         f"Only {variant.stock} items left in stock!", "warning")
@@ -82,14 +88,29 @@ def add_to_cart():
                 item['quantity'] += quantity
                 break
         else:
-            cart.append({'variant_id': variant_id, 'quantity': quantity})
+            cart.append({'variant_id': variant.id, 'quantity': quantity})
 
-        session['cart'] = cart
-        flash("Item added to cart!", "success")
-        return redirect(url_for('views.view_cart'))
+    else:  # Product with no variants
+        product = Product.query.get_or_404(product_id)
 
-    flash("Invalid form submission", "danger")
-    return redirect(request.referrer or url_for('views.home'))
+        if product.stock is not None and quantity > product.stock:
+            flash(f"Only {product.stock} items left in stock!", "warning")
+            return redirect(url_for("views.product_detail", product_id=product.id))
+
+        for item in cart:
+            if item.get("product_id") == product.id:
+                if product.stock is not None and item['quantity'] + quantity > product.stock:
+                    flash(
+                        f"Only {product.stock} items left in stock!", "warning")
+                    return redirect(url_for("views.product_detail", product_id=product.id))
+                item['quantity'] += quantity
+                break
+        else:
+            cart.append({'product_id': product.id, 'quantity': quantity})
+
+    session['cart'] = cart
+    flash("Item added to cart!", "success")
+    return redirect(url_for("views.view_cart"))
 
 
 @views.route('/cart')
@@ -191,16 +212,13 @@ def checkout():
                 country=shipping['country'],
                 postal_code=shipping['postal_code'],
                 total_price=total,
-                total_impact=total_impact
+                total_impact=round(total_impact, 2)
             )
             db.session.add(order)
             db.session.flush()
 
             for item in cart:
                 variant = ProductVariant.query.get(item['variant_id'])
-                print("Variant ID:", item['variant_id'])
-                print("Requested:", item.get('quantity'))
-                print("In Stock:", variant.stock if variant else "Not Found")
                 if not variant or item['quantity'] > variant.stock:
                     flash("Stock error. Please review your cart.", "danger")
                     return redirect(url_for('views.view_cart'))
@@ -210,7 +228,8 @@ def checkout():
                     variant_id=variant.id,
                     quantity=item['quantity'],
                     price=variant.price,
-                    impact=variant.environmental_impact
+                    impact=round(variant.environmental_impact *
+                                 item['quantity'], 2)
                 ))
 
             db.session.commit()
@@ -222,7 +241,26 @@ def checkout():
 
         return render_template("checkout.html", form=form, step='review', cart=detailed_cart, total=total, total_impact=total_impact)
 
+
 @views.route('/clear-session')
 def clear_session():
     session.clear()
     return redirect(url_for('views.home'))
+
+
+@views.route('/orders')
+@login_required
+def order_history():
+    orders = Order.query.filter_by(user_id=current_user.id).order_by(
+        Order.created_at.desc()).all()
+    return render_template('order_history.html', orders=orders)
+
+
+@views.route('orders/<int:order_id>/invoice')
+@login_required
+def download_invoice(order_id):
+    order = Order.query.get_or_404(order_id)
+    if order.user_id != current_user.id:
+        abort(403)
+
+    return render_template("invoice.html", order=order)

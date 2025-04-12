@@ -6,89 +6,103 @@
 {% block content %}
   <div class="container py-5">
     <div class="row">
-      <!-- Product Image -->
       <div class="col-md-6">
         <img src="{{ url_for('static', filename='images/products/' + product.image_filename) }}" class="img-fluid rounded" alt="{{ product.name }}" />
       </div>
 
-      <!-- Product Info + Form -->
       <div class="col-md-6">
         <h1>{{ product.name }}</h1>
         <p class="text-muted">{{ product.description }}</p>
-        <div class="mb-3">
-          <p>
-            <span id="price-display" class="badge bg-secondary fs-5"></span>
-          </p>
-          <p>
-            <span id="impact-display" class="badge bg-secondary fs-5">—</span>
-          </p>
-          <p>
-            <span id="stock-display" class="badge bg-secondary fs-5">—</span>
-          </p>
-        </div>
 
-        <!-- Variant Selection Form -->
-        <form method="POST" action="{{ url_for('views.add_to_cart') }}">
-          {{ form.hidden_tag() }}
+        {% if variants %}
+          <!-- Variant-based Product -->
+          <form method="POST" action="{{ url_for('views.add_to_cart') }}">
+            {{ form.hidden_tag() }}
+            {{ form.product_id(value=product.id) }}
+            {{ form.variant_id(id='variant_id') }}
 
-          <!-- Hidden field to hold the matched variant ID -->
-          {{ form.variant_id(id='variant_id') }}
+            {% for option_name, values in option_values.items() %}
+              <div class="mb-3">
+                <label class="form-label">{{ option_name }}</label>
+                <select class="form-select variant-select" name="{{ option_name }}">
+                  {% for value in values %}
+                    <option value="{{ value.value }}">{{ value.value }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endfor %}
 
-          {% for option_name, values in option_values.items() %}
+            <p>
+              <span id="price-display" class="badge bg-secondary fs-5">—</span>
+            </p>
+            <p>
+              <span id="impact-display" class="badge bg-secondary fs-5">—</span>
+            </p>
+            <p>
+              <span id="stock-display" class="badge bg-secondary fs-5">—</span>
+            </p>
+
             <div class="mb-3">
-              <label class="form-label">{{ option_name }}</label>
-              <select class="form-select variant-select" name="{{ option_name }}">
-                {% for value in values %}
-                  <option value="{{ value.value }}">{{ value.value }}</option>
-                {% endfor %}
-              </select>
+              <label class="form-label">{{ form.quantity.label }}</label>
+              {{ form.quantity(class='form-control w-auto d-inline-block') }}
             </div>
-          {% endfor %}
 
-          <div class="mb-3">
-            <label class="form-label">{{ form.quantity.label }}</label>
-            {{ form.quantity(class='form-control w-auto d-inline-block') }}
-          </div>
+            {{ form.submit(class='btn btn-dark') }}
+          </form>
 
-          {{ form.submit(class='btn btn-dark') }}
-        </form>
+          <script>
+          const variantList = {{ variants_json | tojson }};
+          function updatePriceAndImpact() {
+            const selections = Array.from(document.querySelectorAll('.variant-select')).map(select => select.value);
+            const match = variantList.find(v =>
+              v.values.length === selections.length &&
+              v.values.every(val => selections.includes(val))
+            );
+
+            if (match) {
+              document.getElementById("price-display").textContent = `£${match.price.toFixed(2)}`;
+              document.getElementById("impact-display").textContent = `${match.environmental_impact.toFixed(2)} kg CO₂`;
+              document.getElementById("stock-display").textContent = match.stock;
+              document.getElementById("variant_id").value = match.id;
+            } else {
+              document.getElementById("price-display").textContent = "—";
+              document.getElementById("impact-display").textContent = "—";
+              document.getElementById("stock-display").textContent = "—";
+              document.getElementById("variant_id").value = "";
+            }
+          }
+
+          document.querySelectorAll('.variant-select').forEach(select => {
+            select.addEventListener('change', updatePriceAndImpact);
+          });
+
+          updatePriceAndImpact();
+        </script>
+        {% else %}
+          <!-- Simple Product -->
+          <form method="POST" action="{{ url_for('views.add_to_cart') }}">
+            {{ form.hidden_tag() }}
+            {{ form.product_id(value=product.id) }}
+
+            <p>
+              <span class="badge bg-secondary fs-5">£{{ '%.2f'|format(product.price) }}</span>
+            </p>
+            <p>
+              <span class="badge bg-secondary fs-5">{{ product.environmental_impact }} kg CO₂</span>
+            </p>
+            <p>
+              <span class="badge bg-secondary fs-5">{{ product.stock }} in stock</span>
+            </p>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.quantity.label }}</label>
+              {{ form.quantity(class='form-control w-auto d-inline-block') }}
+            </div>
+
+            {{ form.submit(class='btn btn-dark') }}
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>
-
-  <script>
-    const variantList = {{ variants_json | tojson }};
-  
-    function updatePriceAndImpact() {
-      const selections = Array.from(document.querySelectorAll('.variant-select')).map(select => select.value);
-    
-      const match = variantList.find(v =>
-        v.values.length === selections.length &&
-        v.values.every(val => selections.includes(val))
-      );
-  
-      const priceEl = document.getElementById("price-display");
-      const impactEl = document.getElementById("impact-display");
-      const stockEl = document.getElementById("stock-display");
-      const variantInput = document.getElementById("variant_id");
-  
-      if (match) {
-        priceEl.textContent = `£${match.price.toFixed(2)}`;
-        impactEl.textContent = `${match.environmental_impact} kg CO₂`;
-        stockEl.textContent = `${match.stock} in stock!`;
-        variantInput.value = match.id;
-      } else {
-        priceEl.textContent = "—";
-        impactEl.textContent = "—";
-        stockEl.textContent = "—";
-        variantInput.value = "";
-      }
-    }
-  
-    document.querySelectorAll('.variant-select').forEach(select => {
-      select.addEventListener('change', updatePriceAndImpact);
-    });
-  
-    updatePriceAndImpact(); // Run once on load
-  </script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField, EmailField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError, NumberRange
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError, NumberRange, Optional
 import re
 
 
@@ -54,6 +54,25 @@ class BaseProductForm(FlaskForm):
     ])
 
 
+class AdminProductForm(BaseProductForm):
+    is_variant_parent = BooleanField("This product has variants", default=True)
+
+    price = FloatField("Price (£)", validators=[Optional()])
+    environmental_impact = FloatField("Environmental Impact (kg CO₂)", validators=[Optional()])
+    stock = IntegerField("Stock", default=0)
+    submit = SubmitField("Create Product")
+    
+    def validate_price(self, field):
+        if not self.is_variant_parent.data:
+            if field.data is None:
+                raise ValidationError("Price is required for non-variant products. ")
+            
+    def validate_environmental_impact(self, field):
+        if not self.is_variant_parent.data:
+            if field.data is None:
+                raise ValidationError("Environmental Impact is required for non-variant products. ")
+
+
 class SingleOptionForm(FlaskForm):
     option_name = StringField("Option", validators=[
                               DataRequired(), Length(max=50)])
@@ -96,7 +115,8 @@ class ProductVariantForm(FlaskForm):
 
 
 class AddToCartForm(FlaskForm):
-    variant_id = HiddenField("Variant ID", validators=[DataRequired()])
+    variant_id = HiddenField()
+    product_id = HiddenField()
     quantity = IntegerField("Quantity", default=1, validators=[
         DataRequired(),
         NumberRange(min=1, message="Must be at least 1")
@@ -132,3 +152,28 @@ class PaymentForm(FlaskForm):
 
 class ReviewForm(FlaskForm):
     submit = SubmitField("Place Order")
+
+class SingleVariantForm(Form):
+    combo_str = HiddenField()
+    price = FloatField("Price", validators=[DataRequired(), NumberRange(min=0)])
+    environmental_impact = FloatField("Environmental Impact", validators=[DataRequired(), NumberRange(min=0)])
+    stock = IntegerField("Stock", validators=[DataRequired(), NumberRange(min=0)])
+    
+class WizardVariantsForm(FlaskForm):
+    variants = FieldList(FormField(SingleVariantForm))
+    submit = SubmitField("Save All Variants")
+    
+class WizardStep3OptionForm(Form):
+    option_name = HiddenField()
+    values_str = StringField("Values", validators=[DataRequired(), Length(max=200)])
+
+
+class WizardStep3Form(FlaskForm):
+    options = FieldList(FormField(WizardStep3OptionForm))
+    submit = SubmitField("Next")
+    
+class CategoryForm(FlaskForm):
+    parent_id = SelectField("Parent Category", coerce=int, choices=[])
+    name = StringField("Name", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit= SubmitField("Save Category")

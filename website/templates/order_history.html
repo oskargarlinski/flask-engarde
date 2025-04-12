@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}
+  Your Orders
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Order History</h1>
+    {% if orders %}
+      {% for order in orders %}
+        <div class="card mb-4">
+          <div class="card-header">
+            <strong>Order #{{ order.id }}</strong> - {{ order.created_at.strftime('%d %B %Y') }}
+          </div>
+          <div class="card-body">
+            <p>
+              <strong>Address:</strong> {{ order.address }}, {{ order.city }}, {{ order.postal_code }}, {{ order.country }}
+            </p>
+            <p>
+              <strong>Total:</strong> £{{ '%.2f'|format(order.total_price) }} | <strong>Impact:</strong> {{ order.total_impact }} kg CO₂
+            </p>
+            <ul class="list-group list-group-flush">
+              {% for item in order.items %}
+                <li class="list-group-item">{{ item.variant.product.name }} ({{ item.variant.sku }}) – Qty: {{ item.quantity }} – £{{ '%.2f'|format(item.price) }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <a href="{{ url_for('views.download_invoice', order_id=order.id) }}" class="btn btn-outline-secondary btn-sm" target="_blank"><i class="fa fa-file-invoice"></i> Invoice</a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>You haven’t placed any orders yet.</p>
+    {% endif %}
+  </div>
+{% endblock %}
