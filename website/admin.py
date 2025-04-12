@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, session
-from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination, Category
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, session, current_app
+from flask_login import current_user
+from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination, Category, Order
 from .forms import BaseProductForm, AdminProductForm, VariantOptionForm, ProductVariantForm, WizardVariantsForm, CategoryForm
 from . import db
+from werkzeug.utils import secure_filename
 from itertools import product as cartesian_product
+from functools import wraps
 import os
 import random
 import string
-from flask import current_app
-from werkzeug.utils import secure_filename
+
 
 admin = Blueprint('admin', __name__)
 
@@ -67,13 +69,24 @@ def get_category_tree(parent_id=None, depth=0):
     return results
 
 
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin:
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @admin.route('/admin/products', endpoint='products')
+@admin_required
 def list_products():
     products = Product.query.all()
     return render_template('admin/admin_products.html', products=products)
 
 
 @admin.route('/admin/products/<int:product_id>/delete', methods=['POST', 'GET'])
+@admin_required
 def delete_product(product_id):
     product = Product.query.get_or_404(product_id)
 
@@ -103,6 +116,7 @@ def delete_product(product_id):
 
 
 @admin.route('/admin/products/simple/<int:id>/edit', methods=['GET', 'POST'])
+@admin_required
 def edit_simple_product(id):
     product = Product.query.get_or_404(id)
     if product.is_variant_parent:
@@ -143,6 +157,7 @@ def edit_simple_product(id):
 
 
 @admin.route('/admin/variant-product/<int:id>/edit', methods=['GET', 'POST'])
+@admin_required
 def edit_variant_product(id):
     product = Product.query.get_or_404(id)
     if not product.is_variant_parent:
@@ -203,6 +218,7 @@ def edit_variant_product(id):
 
 
 @admin.route('/admin/product_wizard/step1', methods=['GET', 'POST'])
+@admin_required
 def wizard_step1():
     form = AdminProductForm()
     form.category.choices = [(c.id, c.name) for c in Category.query.all()]
@@ -248,6 +264,7 @@ def wizard_step1():
 
 
 @admin.route('/admin/product_wizard/step2', methods=['GET', 'POST'])
+@admin_required
 def wizard_step2():
     wizard_data = session.get('new_product')
     if not wizard_data or not wizard_data.get('is_variant_parent'):
@@ -270,6 +287,7 @@ def wizard_step2():
 
 
 @admin.route('/admin/product_wizard/step3', methods=['GET', 'POST'])
+@admin_required
 def wizard_step3():
     wizard_data = session.get('new_product')
     if not wizard_data or not wizard_data.get('is_variant_parent'):
@@ -315,6 +333,7 @@ def wizard_step3():
 
 
 @admin.route('/admin/product_wizard/step4', methods=['GET', 'POST'])
+@admin_required
 def wizard_step4():
     wizard_data = session.get('new_product')
     if not wizard_data or not wizard_data.get('is_variant_parent'):
@@ -373,6 +392,7 @@ def wizard_step4():
 
 
 @admin.route('/admin/product_wizard/finish', methods=['GET', 'POST'])
+@admin_required
 def wizard_finish():
     from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination
     wizard_data = session.get('new_product')
@@ -448,6 +468,7 @@ def wizard_finish():
 
 
 @admin.route('/admin/product_wizard/cancel')
+@admin_required
 def wizard_cancel():
     session.pop('new_product', None)
     flash("Product creation canceled. Nothing was saved.", "info")
@@ -455,12 +476,14 @@ def wizard_cancel():
 
 
 @admin.route("admin/categories", methods=["GET"])
+@admin_required
 def admin_list_categories():
     cat_tree = get_category_tree(parent_id=None, depth=0)
     return render_template("admin/admin_categories.html", cat_tree=cat_tree)
 
 
 @admin.route("admin/categories/new", methods=["GET", "POST"])
+@admin_required
 def admin_new_category():
     form = CategoryForm()
 
@@ -492,6 +515,7 @@ def admin_new_category():
 
 
 @admin.route("admin/category/<int:cat_id>/edit", methods=["GET", "POST"])
+@admin_required
 def admin_edit_category(cat_id):
     cat = Category.query.get_or_404(cat_id)
     form = CategoryForm(obj=cat)
@@ -519,6 +543,7 @@ def admin_edit_category(cat_id):
 
 
 @admin.route("admin/category/<int:cat_id>/delete", methods=["POST"])
+@admin_required
 def admin_delete_category(cat_id):
     cat = Category.query.get_or_404(cat_id)
 
@@ -540,3 +565,16 @@ def admin_delete_category(cat_id):
     flash("Category (and any subcategories) deleted! ", "success")
 
     return redirect(url_for('admin.admin_list_categories'))
+
+
+@admin.route('admin/orders')
+@admin_required
+def admin_orders():
+    orders = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template('admin/admin_orders.html', orders=orders)
+
+
+@admin.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    return render_template('admin/admin_dashboard.html')

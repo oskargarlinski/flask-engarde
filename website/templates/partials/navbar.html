@@ -49,6 +49,11 @@
       {% else %}
         <a href="{{ url_for('auth.login') }}" class="nav-link px-2" title="Login"><i class="fa-solid fa-circle-user"></i></a>
       {% endif %}
+      {% if current_user.is_authenticated and current_user.is_admin %}
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link px-2" title="Admin Dashboard">
+          <i class="fa-solid fa-user-shield"></i>
+        </a>
+      {% endif %}
       <a href="{{ url_for('views.view_cart') }}" class="nav-link px-2"><i class="fa-solid fa-cart-shopping"></i></a>
     </div>
   </div>

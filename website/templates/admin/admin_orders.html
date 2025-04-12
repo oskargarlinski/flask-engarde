@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}
+  All Orders
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">All Orders</h1>
+    <table class="table table-bordered table-hover">
+      <thead class="table-dark">
+        <tr>
+          <th>Order #</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Impact</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.first_name }} {{ order.last_name }}</td>
+            <td>{{ order.email }}</td>
+            <td>{{ order.created_at.strftime('%d %b %Y') }}</td>
+            <td>£{{ '%.2f'|format(order.total_price) }}</td>
+            <td>{{ order.total_impact }} kg CO₂</td>
+            <td>
+              <a href="{{ url_for('views.download_invoice', order_id=order.id) }}" class="btn btn-sm btn-outline-dark" target="_blank">View</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}
+  Admin Dashboard
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Admin Dashboard</h1>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Manage Products</h5>
+            <p class="card-text">Edit existing products or add new ones via the wizard.</p>
+            <a href="{{ url_for('admin.products') }}" class="btn btn-dark btn-sm">View Products</a>
+            <a href="{{ url_for('admin.wizard_step1') }}" class="btn btn-outline-dark btn-sm">Add Product</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Manage Categories</h5>
+            <p class="card-text">View or update your product category structure.</p>
+            <a href="{{ url_for('admin.admin_list_categories') }}" class="btn btn-dark btn-sm">View Categories</a>
+            <a href="{{ url_for('admin.admin_new_category') }}" class="btn btn-outline-dark btn-sm">Add Category</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">View Orders</h5>
+            <p class="card-text">See all user orders placed through the store.</p>
+            <a href="{{ url_for('admin.admin_orders') }}" class="btn btn-dark btn-sm">All Orders</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
