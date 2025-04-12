@@ -6,9 +6,6 @@
     --gold-strong: #ffdf00;
 }
 
-/* ----------------------------------------
-    Typography & Fonts
-  ---------------------------------------- */
 body {
     font-family: 'Merriweather', serif;
     margin-bottom: 0;
@@ -27,9 +24,6 @@ body {
     padding: 0;
 }
 
-/* ----------------------------------------
-    Navbar
-  ---------------------------------------- */
 .navbar {
     background-color: var(--fencing-dark);
     position: relative;
@@ -45,7 +39,6 @@ body {
     color: var(--fencing-gold);
 }
 
-/* Navbar Icons */
 .navbar .nav-link i {
     font-size: 1.2rem;
     color: white;
@@ -66,7 +59,6 @@ body {
     font-size: 0.85rem;
 }
 
-/* Smooth transition for the search bar */
 .search-form {
     width: 0;
     overflow: hidden;
@@ -77,19 +69,14 @@ body {
 
 .search-form.show {
     width: 250px;
-    /* Adjust as needed */
     opacity: 1;
     pointer-events: auto;
 }
 
 .search-hidden {
     display: inline-flex;
-    /* Keeps it in the layout */
 }
 
-/* ----------------------------------------
-    Auth Page Backgrounds
-  ---------------------------------------- */
 .login-page,
 .signup-page {
     background-size: cover;
@@ -111,9 +98,6 @@ body {
     background-image: url("../images/fencing-bg-2.jpeg");
 }
 
-/* ----------------------------------------
-    Footer
-  ---------------------------------------- */
 footer {
     background-color: var(--fencing-dark);
     color: white;
@@ -139,9 +123,6 @@ footer a:hover {
     color: var(--fencing-gold);
 }
 
-/* ----------------------------------------
-    Flash Message / Password Strength
-  ---------------------------------------- */
 #password-strength {
     transition: color 0.4s ease;
 }

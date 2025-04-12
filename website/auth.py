@@ -35,19 +35,16 @@ def logout():
 @auth.route('/sign-up', methods=["GET", "POST"])
 def sign_up():
     form = SignupForm()
-    # Check if user already exists (also handled in form validator for a second layer of security)
     if form.validate_on_submit():
         existing_user = User.query.filter_by(email=form.email.data).first()
         if existing_user:
             flash("An account with that email already exists.", "danger")
             return redirect(url_for('auth.sign_up'))
 
-        # Start creating new user
         hashed_password = generate_password_hash(form.password.data)
         new_user = User(first_name=form.first_name.data, last_name=form.last_name.data,
                         email=form.email.data, password_hash=hashed_password)
 
-        # Try and add the user to the database.
         try:
             db.session.add(new_user)
             db.session.commit()

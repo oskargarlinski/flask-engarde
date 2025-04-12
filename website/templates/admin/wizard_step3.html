@@ -7,7 +7,6 @@
   <form method="POST">
     {{ form.hidden_tag() }}
 
-    <!-- If you want to show top-level errors -->
     {% for error_list in form.errors.values() %}
       {% for e in error_list %}
         <div class="text-danger">{{ e }}</div>
@@ -15,20 +14,13 @@
     {% endfor %}
 
     {% for subform in form.options %}
-      <!-- subform corresponds to WizardStep3OptionForm -->
-      <!-- A hidden field with the name of the option -->
       {{ subform.option_name() }}
 
-      <!-- We can show the name in a label -->
       <div class="mb-3">
         <label class="form-label fw-bold">
           {{ subform.option_name.data }}
         </label>
-
-        <!-- The text field where user enters "S, M, L" etc. -->
         {{ subform.values_str(class="form-control", placeholder="Enter values separated by commas (e.g. S, M, L)") }}
-
-        <!-- Show any validation errors for this subform field -->
         {% for err in subform.values_str.errors %}
           <div class="text-danger">{{ err }}</div>
         {% endfor %}
