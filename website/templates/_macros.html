@@ -8,3 +8,69 @@
     {{ name.replace('_', ' ').title() }}
   </a>
 {% endmacro %}
+
+
+{% macro user_modals(user) %}
+  <!-- Promote Modal -->
+  <div class="modal fade" id="promoteModal-{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin.promote_user', user_id=user.id) }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Promotion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Promote <strong>{{ user.email }}</strong> to admin?
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Yes, Promote</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demote Modal -->
+  <div class="modal fade" id="demoteModal-{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin.demote_user', user_id=user.id) }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Demotion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Revoke admin from <strong>{{ user.email }}</strong>?
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-warning">Yes, Revoke</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal fade" id="deleteModal-{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete <strong>{{ user.email }}</strong>?
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endmacro %}

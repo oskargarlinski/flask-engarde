@@ -25,7 +25,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
 }
 
 /* ----------------------------------------
@@ -161,17 +160,6 @@ footer a:hover {
     color: #000;
 }
 
-.card-img-top {
-    height: 400px;
-    object-fit: cover;
-    object-position: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glider-contain {
-    overflow-x: hidden;
-}
-
 #product-tooltip {
     background-color: var(--fencing-dark);
     color: white;
@@ -185,4 +173,83 @@ footer a:hover {
     white-space: normal;
     overflow-wrap: break-word;
     line-height: 1.4;
+}
+
+.glider-contain {
+    width: 100%;
+    padding: 0 1rem;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.glider {
+    margin: 0 auto;
+}
+
+
+.glider-prev,
+.glider-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: var(--fencing-dark);
+    color: var(--fencing-gold);
+    border: none;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.glider-prev {
+    left: 0;
+}
+
+.glider-next {
+    right: 0;
+}
+
+.glider>div {
+    flex: 0 0 auto;
+    width: 100%;
+    padding: 0 0.5rem;
+}
+
+@media (min-width: 768px) {
+    .glider>div {
+        width: 50%;
+    }
+}
+
+@media (min-width: 1024px) {
+    .glider>div {
+        width: 33.3333%;
+    }
+}
+
+.card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.card.h100 {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-body {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-img-top {
+    height: 300px;
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
 }

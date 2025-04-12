@@ -7,7 +7,21 @@
   <main class="signup-page">
     <!-- Centered white form box -->
     <div class="container h-100 d-flex justify-content-center align-items-center" style="position: relative; z-index: 1;">
-      {% include 'partials/_flashes.html' %}
+      {% block flashes %}
+        <div class="container mb-4" style="max-width: 600px;">
+          {% with messages=get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+      {% endblock %}
+
       <div class="bg-white rounded shadow p-4 p-md-5" style="max-width: 500px; width: 100%;">
         <!-- Heading -->
         <div class="text-center mb-4">

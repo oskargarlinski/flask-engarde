@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, login_required, logout_user, current_user
 from .models import db, User
@@ -9,6 +9,7 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=["GET", "POST"])
 def login():
+    session.pop('cart', None)
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -26,6 +27,7 @@ def login():
 @login_required
 def logout():
     logout_user()
+    session.pop('cart', None)
     flash("You have been logged out.", "success")
     return redirect(url_for('auth.login'))
 

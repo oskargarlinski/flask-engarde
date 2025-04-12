@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, session, current_app
 from flask_login import current_user
-from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination, Category, Order
+from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination, Category, Order, User
 from .forms import BaseProductForm, AdminProductForm, VariantOptionForm, ProductVariantForm, WizardVariantsForm, CategoryForm
 from . import db
 from werkzeug.utils import secure_filename
@@ -578,3 +578,52 @@ def admin_orders():
 @admin_required
 def admin_dashboard():
     return render_template('admin/admin_dashboard.html')
+
+
+@admin.route('/admin/users')
+@admin_required
+def admin_users():
+    search = request.args.get('search', '').strip()
+    users = User.query
+    if search:
+        users = users.filter(User.email.ilike(f"%{search}"))
+    users = users.order_by(User.email).all()
+    return render_template('admin/admin_users.html', users=users)
+
+
+@admin.route('/admin/users/<int:user_id>/promote', methods=['POST'])
+@admin_required
+def promote_user(user_id):
+    user = User.query.get_or_404(user_id)
+    user.is_admin = True
+    db.session.commit()
+    flash(f"{user.email} promoted to admin.", "success")
+    return redirect(url_for('admin.admin_users'))
+
+
+@admin.route('/admin/users/<int:user_id>/demote', methods=['POST'])
+@admin_required
+def demote_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash("You cannot demote yourself.", "danger")
+        return redirect(url_for('admin.admin_users'))
+
+    user.is_admin = False
+    db.session.commit()
+    flash(f"{user.email} is no longer an admin.", "warning")
+    return redirect(url_for('admin.admin_users'))
+
+@admin.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+
+    if user.id == current_user.id:
+        flash("You cannot delete yourself.", "danger")
+        return redirect(url_for('admin.admin_users'))
+
+    db.session.delete(user)
+    db.session.commit()
+    flash(f"User {user.email} deleted.", "danger")
+    return redirect(url_for('admin.admin_users'))

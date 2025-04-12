@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% import '_macros.html' as macros %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4">User Management</h1>
+
+  <form method="GET" class="mb-3 d-flex justify-content-end">
+    <input type="text" name="search" placeholder="Search by email..." class="form-control form-control-sm w-auto me-2" value="{{ request.args.get('search', '') }}">
+    <button class="btn btn-sm btn-outline-dark" type="submit">Search</button>
+  </form>  
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Admin?</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.first_name }} {{ user.last_name }}</td>
+          <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+          <td>
+            {% if not user.is_admin %}
+              <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#promoteModal-{{ user.id }}">Promote</button>
+            {% else %}
+              <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#demoteModal-{{ user.id }}">Revoke</button>
+            {% endif %}
+
+            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ user.id }}">Delete</button>
+          </td>
+        </tr>
+        {% for user in users %}
+          {{ macros.user_modals(user) }}
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

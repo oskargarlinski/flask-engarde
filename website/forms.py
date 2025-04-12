@@ -3,6 +3,38 @@ from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, FieldList, FormField, HiddenField, Form, SelectField, IntegerField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp, ValidationError, NumberRange, Optional
 import re
+from datetime import datetime
+
+
+def validate_expiry_date(form, field):
+    try:
+        exp_str = field.data.strip()
+        if '/' not in exp_str:
+            raise ValidationError("Use MM/YY format.")
+        
+        month, year = exp_str.split('/')
+        month = int(month)
+        year = int(year)
+        
+        if year < 100:
+            year += 2000
+            
+        if not 1 <= month < 13:
+            raise ValidationError("Invalid month.")
+        
+        now = datetime.now()
+        expiry = datetime(year, month, 1)
+        
+        if expiry < now.replace(day=1):
+            raise ValidationError("Card has expired.")
+        
+    except:
+        raise ValidationError("Invalid date format.")
+
+def validate_credit_card(form, field):
+    cleaned = re.sub(r'[\s\-]', '', field.data)
+    if not cleaned.isdigit() or len(cleaned) != 16:
+        raise ValidationError("Card number must be a 16-digit number.")
 
 
 def strong_password(form, field):
@@ -58,19 +90,22 @@ class AdminProductForm(BaseProductForm):
     is_variant_parent = BooleanField("This product has variants", default=True)
 
     price = FloatField("Price (£)", validators=[Optional()])
-    environmental_impact = FloatField("Environmental Impact (kg CO₂)", validators=[Optional()])
+    environmental_impact = FloatField(
+        "Environmental Impact (kg CO₂)", validators=[Optional()])
     stock = IntegerField("Stock", default=0)
     submit = SubmitField("Create Product")
-    
+
     def validate_price(self, field):
         if not self.is_variant_parent.data:
             if field.data is None:
-                raise ValidationError("Price is required for non-variant products. ")
-            
+                raise ValidationError(
+                    "Price is required for non-variant products. ")
+
     def validate_environmental_impact(self, field):
         if not self.is_variant_parent.data:
             if field.data is None:
-                raise ValidationError("Environmental Impact is required for non-variant products. ")
+                raise ValidationError(
+                    "Environmental Impact is required for non-variant products. ")
 
 
 class SingleOptionForm(FlaskForm):
@@ -144,36 +179,46 @@ class ShippingForm(FlaskForm):
 
 class PaymentForm(FlaskForm):
     card_number = StringField("Card Number", validators=[
-                              DataRequired(), Length(min=16, max=16)])
-    expiry_date = StringField("Expiry Date", validators=[DataRequired()])
-    cvv = StringField("CVV", validators=[DataRequired(), Length(min=3, max=4)])
+        DataRequired(), validate_credit_card])
+    expiry_date = StringField("Expiry Date (MM/YY)",
+                              validators=[DataRequired(), validate_expiry_date])
+    cvv = StringField("CVV", validators=[DataRequired(), Regexp(
+        r'^\d{3,4}$', message="CVV must be 3 or 4 digits.")])
     next = SubmitField("Review Order")
 
 
 class ReviewForm(FlaskForm):
     submit = SubmitField("Place Order")
 
+
 class SingleVariantForm(Form):
     combo_str = HiddenField()
-    price = FloatField("Price", validators=[DataRequired(), NumberRange(min=0)])
-    environmental_impact = FloatField("Environmental Impact", validators=[DataRequired(), NumberRange(min=0)])
-    stock = IntegerField("Stock", validators=[DataRequired(), NumberRange(min=0)])
-    
+    price = FloatField("Price", validators=[
+                       DataRequired(), NumberRange(min=0)])
+    environmental_impact = FloatField("Environmental Impact", validators=[
+                                      DataRequired(), NumberRange(min=0)])
+    stock = IntegerField("Stock", validators=[
+                         DataRequired(), NumberRange(min=0)])
+
+
 class WizardVariantsForm(FlaskForm):
     variants = FieldList(FormField(SingleVariantForm))
     submit = SubmitField("Save All Variants")
-    
+
+
 class WizardStep3OptionForm(Form):
     option_name = HiddenField()
-    values_str = StringField("Values", validators=[DataRequired(), Length(max=200)])
+    values_str = StringField("Values", validators=[
+                             DataRequired(), Length(max=200)])
 
 
 class WizardStep3Form(FlaskForm):
     options = FieldList(FormField(WizardStep3OptionForm))
     submit = SubmitField("Next")
-    
+
+
 class CategoryForm(FlaskForm):
     parent_id = SelectField("Parent Category", coerce=int, choices=[])
     name = StringField("Name", validators=[DataRequired()])
     slug = StringField("Slug", validators=[DataRequired()])
-    submit= SubmitField("Save Category")
+    submit = SubmitField("Save Category")

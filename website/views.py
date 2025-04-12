@@ -36,23 +36,28 @@ def get_all_descendants(cat_id):
 
     return visited
 
+
 def get_variant_label(variant):
     if not variant or not variant.values:
         return ""
     return ",".join(v.value for v in variant.values)
+
 
 def effective_price(p):
     if p.is_variant_parent and p.variants:
         return min(v.price for v in p.variants)
     return p.price or float('inf')
 
+
 def effective_impact(p):
     if p.is_variant_parent and p.variants:
         return min(v.environmental_impact for v in p.variants if v.environmental_impact is not None)
     return p.environmental_impact or float('inf')
 
+
 @views.route('/')
 def home():
+    form = AddToCartForm()
     sort = request.args.get('sort', 'default')
     products = Product.query.all()
 
@@ -63,7 +68,8 @@ def home():
     elif sort == 'name':
         products.sort(key=lambda p: p.name.lower())
 
-    return render_template('home.html', products=products, sort=sort)
+    return render_template('home.html', products=products, sort=sort, form=form)
+
 
 @views.route('/product-info/<int:product_id>')
 def product_info(product_id):
@@ -72,6 +78,7 @@ def product_info(product_id):
         'name': product.name,
         'description': product.description
     }
+
 
 @views.route('/products')
 def products():
@@ -236,8 +243,8 @@ def view_cart():
                 detailed_cart.append({
                     'product': product,
                     'quantity': item['quantity'],
-                    'subtotal': product.price * item['quantity'],
-                    'impact': (product.environmental_impact or 0) * item['quantity']
+                    'subtotal': (product.price or 0) * item['quantity'],
+                    'impact': (product.environmental_impact or 0) * item['quantity'],
                 })
 
     total = sum(item['subtotal'] for item in detailed_cart)
@@ -419,7 +426,7 @@ def order_history():
 @login_required
 def download_invoice(order_id):
     order = Order.query.get_or_404(order_id)
-    if order.user_id != current_user.id:
+    if not current_user.is_admin and order.user_id != current_user.id:
         abort(403)
 
     return render_template("invoice.html", order=order)

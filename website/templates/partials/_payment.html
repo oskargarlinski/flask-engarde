@@ -1,16 +1,30 @@
 <div>
-    <h4>Payment Details</h4>
-    <div class="mb-3">
-      {{ form.card_number.label(class='form-label') }}
-      {{ form.card_number(class='form-control') }}
-    </div>
-    <div class="mb-3">
-      {{ form.expiry_date.label(class='form-label') }}
-      {{ form.expiry_date(class='form-control') }}
-    </div>
-    <div class="mb-3">
-      {{ form.cvv.label(class='form-label') }}
-      {{ form.cvv(class='form-control') }}
-    </div>
+  <h4>Payment Details</h4>
+
+  <!-- Card Number -->
+  <div class="mb-3">
+    {{ form.card_number.label(class='form-label') }}
+    {{ form.card_number(class='form-control' + (' is-invalid' if form.card_number.errors else '')) }}
+    {% for error in form.card_number.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
   </div>
-  
+
+  <!-- Expiry Date -->
+  <div class="mb-3">
+    {{ form.expiry_date.label(class="form-label") }}
+    {{ form.expiry_date(class="form-control" + (' is-invalid' if form.expiry_date.errors else ''), placeholder="MM/YY") }}
+    {% for error in form.expiry_date.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+
+  <!-- CVV -->
+  <div class="mb-3">
+    {{ form.cvv.label(class='form-label') }}
+    {{ form.cvv(class='form-control' + (' is-invalid' if form.cvv.errors else '')) }}
+    {% for error in form.cvv.errors %}
+      <div class="text-danger small">{{ error }}</div>
+    {% endfor %}
+  </div>
+</div>

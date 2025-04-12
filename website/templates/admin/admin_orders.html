@@ -28,7 +28,7 @@
             <td>£{{ '%.2f'|format(order.total_price) }}</td>
             <td>{{ order.total_impact }} kg CO₂</td>
             <td>
-              <a href="{{ url_for('views.download_invoice', order_id=order.id) }}" class="btn btn-sm btn-outline-dark" target="_blank">View</a>
+              <a href="{{ url_for('views.download_invoice', order_id=order.id) }}" class="btn btn-sm btn-outline-dark" target="_blank">View Invoice</a>
             </td>
           </tr>
         {% endfor %}

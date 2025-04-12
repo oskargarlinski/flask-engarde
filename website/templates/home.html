@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}
+  Home
+{% endblock %}
 
 {% block content %}
-{% include 'partials/_flashes.html' %}
-<div class="glider-contain my-5">
-  <div class="glider">
-    {% for product in products %}
-        <div class="px-2" style="width: 300px;">
-          <div class="card h-100 bg-dark text-white border-0 shadow-sm product-card" data-product-id="{{ product.id }}">
+  <div class="glider-contain my-5">
+    <div class="glider">
+      {% for product in products %}
+        <div class="glider-slide product-card" data-product-id="{{ product.id }}">
+          <div class="card h-100 bg-dark text-white border-0 shadow-sm">
             <a href="{{ url_for('views.product_detail', product_id=product.id) }}">
               <img src="{{ url_for('static', filename='images/products/' ~ (product.image_filename if product.image_filename and product.image_filename != 'None' else 'default-product.webp')) }}"
                   class="card-img-top" alt="{{ product.name }}">
@@ -31,106 +32,115 @@
                 {% endif %}
               </p>
 
-              <form method="POST" action="{{ url_for('views.add_to_cart') }}" class="mt-auto">
-                <input type="hidden" name="product_id" value="{{ product.id }}">
-                <input type="hidden" name="variant_id" value="">
-                <div class="input-group mb-2">
-                  <input type="number" name="quantity" class="form-control form-control-sm" value="1" min="1">
-                  <button class="btn btn-outline-light btn-sm" type="submit">Add</button>
-                </div>
-              </form>
-
-              <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="btn btn-outline-light btn-sm w-100">View</a>
+              {% if product.is_variant_parent %}
+                <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="btn btn-outline-light btn-sm w-100">View Options</a>
+              {% else %}
+                <form method="POST" action="{{ url_for('views.add_to_cart') }}">
+                  {{ form.csrf_token() }}
+                  <input type="hidden" name="product_id" value="{{ product.id }}">
+                  <input type="hidden" name="variant_id" value="">
+                
+                  <div class="input-group input-group-sm mb-2">
+                    <input type="number" name="quantity" class="form-control" value="1" min="1">
+                    <button class="btn btn-outline-light" type="submit">Add</button>
+                  </div>
+                </form>
+                <a href="{{ url_for('views.product_detail', product_id=product.id) }}" class="btn btn-outline-light btn-sm w-100">View</a>
+              {% endif %}
             </div>
           </div>
         </div>
-    {% endfor %}
+      {% endfor %}
+    </div>
+
+    <button class="glider-prev btn btn-sm btn-light">«</button>
+    <button class="glider-next btn btn-sm btn-light">»</button>
+    <div class="glider-dots mt-2"></div>
   </div>
 
-  <!-- Arrows -->
-  <button class="glider-prev btn btn-sm btn-light">«</button>
-  <button class="glider-next btn btn-sm btn-light">»</button>
+  <div id="product-tooltip" class="position-absolute d-none"></div>
 
-  <!-- Dots -->
-  <div role="tablist" class="glider-dots mt-2"></div>
-</div>
+  <div class="py-5 mt-4 text-center">
+    <a href="{{ url_for('views.products') }}" class="btn btn-lg view-all-btn">
+      View All Products <i class="fa fa-arrow-right ms-2"></i>
+    </a>
+  </div>
+  
 
-<div id="product-tooltip" class="position-absolute border rounded p-2 shadow-sm d-none" style="z-index: 9999; max-width: 300px;"></div>
-<div class="py-5 mt-4 text-center">
-  <a href="{{ url_for('views.products') }}" class="btn btn-lg view-all-btn">View All Products<i class="fa fa-arrow-right ms-2"></i></a>
-</div>
-
-
-
-
-<script>
-  let glider;
-  let autoplayInterval;
-
-  function startAutoplay() {
-    autoplayInterval = setInterval(() => {
-      if (glider) glider.scrollItem('next');
-    }, 4000);
-  }
-
-  function stopAutoplay() {
-    clearInterval(autoplayInterval);
-  }
-
-  window.addEventListener('load', function () {
-    glider = new Glider(document.querySelector('.glider'), {
-      slidesToShow: 1,
-      slidesToScroll: 1,
-      draggable: true,
-      dots: '.glider-dots',
-      arrows: {
-        prev: '.glider-prev',
-        next: '.glider-next'
-      },
-      duration: 0.5,
-      scrollLock: true,
-      rewind: true,
-      responsive: [
-        { breakpoint: 768, settings: { slidesToShow: 2 } },
-        { breakpoint: 1024, settings: { slidesToShow: 3 } }
-      ]
+  <script src="https://cdn.jsdelivr.net/npm/glider-js@1/glider.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const tooltip = document.getElementById("product-tooltip");
+  
+      document.querySelectorAll(".product-card").forEach(card => {
+        card.addEventListener("mouseenter", async (e) => {
+          const productId = card.dataset.productId;
+  
+          try {
+            const res = await fetch(`product-info/${productId}`);
+            const data = await res.json();
+  
+            tooltip.innerHTML = `<strong>${data.name}</strong><br><small>${data.description}</small>`;
+            tooltip.classList.remove("d-none");
+          } catch (err) {
+            tooltip.innerHTML = `<em>Error loading description.</em>`;
+            tooltip.classList.remove("d-none");
+          }
+        });
+  
+        card.addEventListener("mousemove", (e) => {
+          tooltip.style.left = e.pageX + 15 + "px";
+          tooltip.style.top = e.pageY + "px";
+        });
+  
+        card.addEventListener("mouseleave", () => {
+          tooltip.classList.add("d-none");
+        });
+      });
     });
-
-    startAutoplay();
-
-    const gliderContainer = document.querySelector('.glider-contain');
-    gliderContainer.addEventListener('mouseenter', stopAutoplay);
-    gliderContainer.addEventListener('mouseleave', startAutoplay);
-  });
-
-  const tooltip = document.getElementById("product-tooltip");
-
-  document.querySelectorAll(".product-card").forEach(card => {
-    card.addEventListener("mouseenter", async (e) => {
-      const productId = card.dataset.productId;
-
-      try {
-        const res = await fetch(`product-info/${productId}`);
-        const data = await res.json();
-
-        tooltip.innerHTML = `<strong>${data.name}</strong><br><small>${data.description}</small>`;
-        tooltip.classList.remove("d-none");
-      } catch (err) {
-        tooltip.innerHTML = `<em>Error loading description.</em>`;
-        tooltip.classList.remove("d-none");
+  </script>
+  
+  <script>
+    window.addEventListener('load', function () {
+      if (typeof Glider === 'undefined') {
+        console.error("Glider.js is not loaded.");
+        return;
       }
+  
+      const glider = new Glider(document.querySelector('.glider'), {
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        draggable: true,
+        dots: '.glider-dots',
+        arrows: {
+          prev: '.glider-prev',
+          next: '.glider-next'
+        },
+        rewind: true,
+        responsive: [
+          {
+            breakpoint: 768,
+            settings: {
+              slidesToShow: 2,
+              slidesToScroll: 1
+            }
+          },
+          {
+            breakpoint: 1024,
+            settings: {
+              slidesToShow: 3,
+              slidesToScroll: 1
+            }
+          }
+        ]
+      });
     });
-
-    card.addEventListener("mousemove", (e) => {
-      tooltip.style.left = e.pageX + 15 + "px";
-      tooltip.style.top = e.pageY + "px";
+    
+    document.querySelectorAll('.glider input, .glider button, .glider select, .glider textarea, .glider label').forEach(el => {
+      el.addEventListener('mousedown', e => e.stopPropagation());
+      el.addEventListener('touchstart', e => e.stopPropagation());
     });
-
-    card.addEventListener("mouseleave", () => {
-      tooltip.classList.add("d-none");
-    });
-  });
-</script>
-
-
+    
+  </script>
+  
 {% endblock %}
