@@ -26,7 +26,7 @@ RUN chmod -R g+w ./instance
 EXPOSE 5000
 
 # Run the Flask app via main.py
-CMD ["python", "main.py"]
+#CMD ["python", "main.py"]
 
 # Alternative: Run using Gunicorn (production)
-# CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
