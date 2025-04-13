@@ -5,19 +5,6 @@
     <!-- Brand -->
     <a class="navbar-brand" href="{{ url_for('views.home') }}"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Brand" height="50" /></a>
 
-    <!-- Centered nav -->
-    <ul class="navbar-nav position-absolute top-50 start-50 translate-middle">
-      <li class="nav-item">
-        <a class="nav-link" href="#">MEN'S</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">WOMEN'S</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">GEAR</a>
-      </li>
-    </ul>
-
     <div class="d-flex align-items-center ms-auto gap-2">
       <div class="search-wrapper d-flex align-items-center position-relative">
         <form method="GET" action="{{ url_for('views.products') }}"

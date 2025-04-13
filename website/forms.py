@@ -11,25 +11,26 @@ def validate_expiry_date(form, field):
         exp_str = field.data.strip()
         if '/' not in exp_str:
             raise ValidationError("Use MM/YY format.")
-        
+
         month, year = exp_str.split('/')
         month = int(month)
         year = int(year)
-        
+
         if year < 100:
             year += 2000
-            
+
         if not 1 <= month < 13:
             raise ValidationError("Invalid month.")
-        
+
         now = datetime.now()
         expiry = datetime(year, month, 1)
-        
+
         if expiry < now.replace(day=1):
             raise ValidationError("Card has expired.")
-        
+
     except:
         raise ValidationError("Invalid date format.")
+
 
 def validate_credit_card(form, field):
     cleaned = re.sub(r'[\s\-]', '', field.data)
@@ -222,3 +223,33 @@ class CategoryForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     slug = StringField("Slug", validators=[DataRequired()])
     submit = SubmitField("Save Category")
+
+
+class PricingRuleForm(FlaskForm):
+    option_name = SelectField("Option")
+    option_value = SelectField("Value")
+    match_conditions = HiddenField()  # gets auto-filled via JS
+    base_price = FloatField("Base Price (£)")
+    base_impact = FloatField("Base Environmental Impact")
+    stock = IntegerField("Stock")
+
+    class Meta:
+        csrf = False
+
+
+class ModifierForm(FlaskForm):
+    option_name = SelectField("Option")
+    option_value = SelectField("Value")
+    value_name = HiddenField()  # Gets populated via JS
+    price_modifier = FloatField("Price Modifier")
+    impact_modifier = FloatField("Impact Modifier")
+    stock_modifier = IntegerField("Stock Modifier", default=0)
+
+    class Meta:
+        csrf = False
+
+
+class RuleWizardForm(FlaskForm):
+    pricing_rules = FieldList(FormField(PricingRuleForm), min_entries=1)
+    modifiers = FieldList(FormField(ModifierForm), min_entries=1)
+    submit = SubmitField("Continue to Variants")

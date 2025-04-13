@@ -234,3 +234,14 @@ footer a:hover {
     object-position: center;
     width: 100%;
 }
+
+.flash-overlay {
+    position: absolute;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 1rem;
+  }

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, session, current_app
 from flask_login import current_user
 from .models import Product, VariantOption, VariantValue, ProductVariant, VariantCombination, Category, Order, User
-from .forms import BaseProductForm, AdminProductForm, VariantOptionForm, ProductVariantForm, WizardVariantsForm, CategoryForm
+from .forms import BaseProductForm, AdminProductForm, VariantOptionForm, ProductVariantForm, WizardVariantsForm, CategoryForm, RuleWizardForm
 from . import db
 from werkzeug.utils import secure_filename
 from itertools import product as cartesian_product
@@ -33,7 +33,7 @@ def shorten_value(value):
 
 
 def generate_string_combo_sku(product, combo_list):
-    category_code = category_prefixes.get(product.category.name, "GEN")
+    category_code = product.category.slug.upper() if product.category and product.category.slug else "GEN"
     name_part = slugify_name(product.name)
     combo_short = '-'.join(shorten_value(val) for val in combo_list)
 
@@ -46,8 +46,8 @@ def generate_string_combo_sku(product, combo_list):
         return f"{category_code}-{name_part}-{random_suffix}"
 
 
-def generate_simple_sku(product_name, category_name):
-    prefix = category_prefixes.get(category_name, "GEN")
+def generate_simple_sku(product_name, category):
+    prefix = category.slug.upper() if category and category.slug else "GEN"
     name_part = slugify_name(product_name)
 
     random_suffix = ''.join(random.choices(
@@ -325,11 +325,61 @@ def wizard_step3():
         wizard_data['option_values'] = option_values
         session['new_product'] = wizard_data
 
-        return redirect(url_for('admin.wizard_step4'))
+        return redirect(url_for('admin.wizard_step3_5'))
 
     # If form fails validation (bad data, blank, etc.)
     flash("Please correct the errors before proceeding.", "danger")
     return render_template('admin/wizard_step3.html', form=form)
+
+
+@admin.route('/admin/product_wizard/step3_5', methods=['GET', 'POST'])
+@admin_required
+def wizard_step3_5():
+    wizard_data = session.get('new_product')
+    if not wizard_data or not wizard_data.get('is_variant_parent'):
+        flash("No variant product in progress.", "warning")
+        return redirect(url_for('admin.products'))
+
+    option_names = list(wizard_data['option_values'].keys())
+    option_value_map = wizard_data['option_values']
+
+    # For POST: count submitted entries early and apply to the form class
+    if request.method == 'POST':
+        rule_fields = [k for k in request.form if k.startswith(
+            'pricing_rules-') and k.endswith('-match_conditions')]
+        mod_fields = [k for k in request.form if k.startswith(
+            'modifiers-') and k.endswith('-value_name')]
+
+        RuleWizardForm.pricing_rules.min_entries = len(rule_fields)
+        RuleWizardForm.modifiers.min_entries = len(mod_fields)
+
+    form = RuleWizardForm()
+
+    # Dynamically populate dropdown choices for each rule/modifier
+    for rule_entry in form.pricing_rules:
+        rule_entry.option_name.choices = [(o, o) for o in option_names]
+        selected_option = rule_entry.option_name.data or option_names[0]
+        rule_entry.option_value.choices = [
+            (v, v) for v in option_value_map.get(selected_option, [])]
+
+    for mod_entry in form.modifiers:
+        mod_entry.option_name.choices = [(o, o) for o in option_names]
+        selected_option = mod_entry.option_name.data or option_names[0]
+        mod_entry.option_value.choices = [
+            (v, v) for v in option_value_map.get(selected_option, [])]
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            wizard_data['pricing_rules'] = [
+                entry.data for entry in form.pricing_rules]
+            wizard_data['modifiers'] = [entry.data for entry in form.modifiers]
+            session['new_product'] = wizard_data
+            return redirect(url_for('admin.wizard_step4'))
+        else:
+            flash("Please correct errors before continuing.", "danger")
+            print("Form Errors:", form.errors)
+
+    return render_template("admin/wizard_step3_5.html", form=form, option_value_map=option_value_map)
 
 
 @admin.route('/admin/product_wizard/step4', methods=['GET', 'POST'])
@@ -347,22 +397,57 @@ def wizard_step4():
     form = WizardVariantsForm()
 
     if request.method == "GET":
-        form.variants.entries = []
-        for c in combos:
-            subform = {}
-            form.variants.append_entry()
-            subform = form.variants[-1]
+        def match_combo(combo_dict, condition_string):
+            conds = [c.strip() for c in condition_string.split(',')]
+            for cond in conds:
+                if '=' not in cond:
+                    continue
+                key, val = cond.split('=')
+                if combo_dict.get(key.strip()) != val.strip():
+                    return False
+            return True
 
-            combo_str = ",".join(c)
+        form.variants.entries = []
+
+        for combo in combos:
+            combo_dict = dict(zip(option_names, combo))
+            combo_str = ",".join(combo)
+
+            # Defaults
+            price = 0.0
+            impact = 0.0
+            stock = 0
+
+            # Base pricing rules
+            for rule in wizard_data.get('pricing_rules', []):
+                if match_combo(combo_dict, rule['match_conditions']):
+                    price = rule['base_price']
+                    impact = rule['base_impact']
+                    stock = rule['stock']
+                    break
+
+            # Apply modifiers
+            for mod in wizard_data.get('modifiers', []):
+                if '=' not in mod['value_name']:
+                    continue
+                key, val = mod['value_name'].split('=')
+                if combo_dict.get(key.strip()) == val.strip():
+                    price += mod.get('price_modifier', 0) or 0
+                    impact += mod.get('impact_modifier', 0) or 0
+                    stock += mod.get('stock_modifier', 0) or 0  # ✅ New line
+
+            # Fill form entry
+            subform = form.variants.append_entry()
+            subform = form.variants[-1]
             subform.combo_str.data = combo_str
-            subform.price.data = 0.0
-            subform.environmental_impact.data = 0.0
-            subform.stock.data = 0
+            subform.price.data = round(price, 2)
+            subform.environmental_impact.data = round(impact, 2)
+            subform.stock.data = stock
 
         return render_template("admin/wizard_step4.html", form=form, combos=combos, option_names=option_names)
 
     if request.method == "POST":
-        if form.validate_on_submit:
+        if form.validate_on_submit():
             variants_data = []
             for i, entry in enumerate(form.variants.entries):
                 combo_str = entry.combo_str.data
@@ -370,9 +455,7 @@ def wizard_step4():
                 env_val = entry.environmental_impact.data
                 stock_val = entry.stock.data
 
-                combo_list = combo_str.split(',')
-
-                combo_list = [x.strip() for x in combo_list]
+                combo_list = [x.strip() for x in combo_str.split(',')]
 
                 variants_data.append({
                     "combo": combo_list,
@@ -389,7 +472,6 @@ def wizard_step4():
         else:
             flash("Please correct the errors before saving.", "danger")
             return render_template("admin/wizard_step4.html", form=form, combos=combos, option_names=option_names)
-
 
 @admin.route('/admin/product_wizard/finish', methods=['GET', 'POST'])
 @admin_required
@@ -453,7 +535,7 @@ def wizard_finish():
         db.session.flush()
 
     else:
-        product.sku = generate_simple_sku(product.name, product.category.name)
+        product.sku = generate_simple_sku(product.name, product.category)
         db.session.add(product)
         db.session.flush()
 
@@ -613,6 +695,7 @@ def demote_user(user_id):
     db.session.commit()
     flash(f"{user.email} is no longer an admin.", "warning")
     return redirect(url_for('admin.admin_users'))
+
 
 @admin.route('/admin/users/<int:user_id>/delete', methods=['POST'])
 @admin_required

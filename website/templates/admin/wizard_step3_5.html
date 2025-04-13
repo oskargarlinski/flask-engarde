@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}
+  Step 3.5 – Define Variant Rules
+{% endblock %}
+
+{% block content %}
+  <div class="container py-5">
+    <h1 class="mb-4">Step 3.5: Define Pricing Rules & Modifiers</h1>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+
+      <!-- Pricing Rules Section -->
+      <div id="pricing-rules-section">
+        <h4 class="d-flex justify-content-between align-items-center">
+          Base Pricing Rules
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addRule()">+ Add Rule</button>
+        </h4>
+        <p class="text-muted small">Apply a base price, impact, and stock to variants that match specific conditions.</p>
+
+        <div id="rules-container">
+          {% for rule in form.pricing_rules %}
+            <div class="card mb-2 p-3 bg-light border rule-entry">
+              <div class="row">
+                <div class="col-md-3 mb-2">{{ rule.option_name.label(class='form-label') }}
+                  {{ rule.option_name(class='form-select') }}</div>
+                <div class="col-md-3 mb-2">{{ rule.option_value.label(class='form-label') }}
+                  {{ rule.option_value(class='form-select') }}</div>
+                <div class="col-md-2 mb-2">{{ rule.base_price.label(class='form-label') }}
+                  {{ rule.base_price(class='form-control') }}</div>
+                <div class="col-md-2 mb-2">{{ rule.base_impact.label(class='form-label') }}
+                  {{ rule.base_impact(class='form-control') }}</div>
+                <div class="col-md-2 mb-2">{{ rule.stock.label(class='form-label') }}
+                  {{ rule.stock(class='form-control') }}</div>
+              </div>
+              {{ rule.match_conditions }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Modifiers Section -->
+      <div id="modifiers-section" class="mt-5">
+        <h4 class="d-flex justify-content-between align-items-center">
+          Modifiers
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addModifier()">+ Add Modifier</button>
+        </h4>
+        <p class="text-muted small">Apply adjustments based on specific value matches (e.g. Grip=Pistol).</p>
+
+        <div id="modifiers-container">
+          {% for mod in form.modifiers %}
+            <div class="card mb-2 p-3 bg-white border modifier-entry">
+              <div class="row">
+                <div class="col-md-2 mb-2">{{ mod.option_name.label(class='form-label') }}
+                  {{ mod.option_name(class='form-select') }}</div>
+                <div class="col-md-2 mb-2">{{ mod.option_value.label(class='form-label') }}
+                  {{ mod.option_value(class='form-select') }}</div>
+                <div class="col-md-2 mb-2">{{ mod.price_modifier.label(class='form-label') }}
+                  {{ mod.price_modifier(class='form-control') }}</div>
+                <div class="col-md-3 mb-2">{{ mod.impact_modifier.label(class='form-label') }}
+                  {{ mod.impact_modifier(class='form-control') }}</div>
+                <div class="col-md-3 mb-2">{{ mod.stock_modifier.label(class='form-label') }}
+                  {{ mod.stock_modifier(class='form-control') }}</div>
+              </div>
+              {{ mod.value_name }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="text-end mt-4">{{ form.submit(class='btn btn-dark') }}</div>
+    </form>
+  </div>
+
+  <script>
+    const optionValueMap = {{ option_value_map | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/wizard_rules.js') }}"></script>
+{% endblock %}

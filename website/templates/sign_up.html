@@ -6,9 +6,10 @@
 {% block content %}
   <main class="signup-page">
     <!-- Centered white form box -->
-    <div class="container h-100 d-flex justify-content-center align-items-center" style="position: relative; z-index: 1;">
+    <div class="bg-white rounded shadow p-4 p-md-5" style="max-width: 500px; width: 100%; z-index: 1;">
+      <!-- Flashes -->
       {% block flashes %}
-        <div class="container mb-4" style="max-width: 600px;">
+        <div class="flash-overlay">
           {% with messages=get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}
@@ -22,70 +23,68 @@
         </div>
       {% endblock %}
 
-      <div class="bg-white rounded shadow p-4 p-md-5" style="max-width: 500px; width: 100%;">
-        <!-- Heading -->
-        <div class="text-center mb-4">
-          <h2 class="fw-bold" style="color: #D4AF37;">Create Account</h2>
-          <p class="text-muted mb-0">Join the En Garde community and gear up in style.</p>
+      <!-- Heading -->
+      <div class="text-center mb-4">
+        <h2 class="fw-bold" style="color: #D4AF37;">Create Account</h2>
+        <p class="text-muted mb-0">Join the En Garde community and gear up in style.</p>
+      </div>
+
+      <!-- Sign Up Form -->
+      <form method="POST" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            {{ form.first_name.label(class='form-label') }}
+            {{ form.first_name(class='form-control', placeholder='Sam') }}
+            {% for error in form.first_name.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form.last_name.label(class='form-label') }}
+            {{ form.last_name(class='form-control', placeholder='Smith') }}
+            {% for error in form.last_name.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
         </div>
 
-        <!-- Sign Up Form -->
-        <form method="POST" novalidate>
-          {{ form.hidden_tag() }}
+        <div class="mb-3">
+          {{ form.email.label(class='form-label') }}
+          {{ form.email(class='form-control', placeholder='you@example.com') }}
+          {% for error in form.email.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              {{ form.first_name.label(class='form-label') }}
-              {{ form.first_name(class='form-control', placeholder='Sam') }}
-              {% for error in form.first_name.errors %}
-                <div class="text-danger small">{{ error }}</div>
-              {% endfor %}
-            </div>
-            <div class="col-md-6 mb-3">
-              {{ form.last_name.label(class='form-label') }}
-              {{ form.last_name(class='form-control', placeholder='Smith') }}
-              {% for error in form.last_name.errors %}
-                <div class="text-danger small">{{ error }}</div>
-              {% endfor %}
-            </div>
-          </div>
+        <div class="mb-3">
+          {{ form.password.label(class='form-label') }}
+          {{ form.password(class='form-control', id='password', placeholder='Enter a strong password') }}
+          <small class="form-text text-muted">Use 8+ characters with a mix of uppercase, lowercase, numbers, and symbols.</small>
+          <div id="password-strength" class="mt-2 small fw-bold"></div>
+          {% for error in form.password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <div class="mb-3">
-            {{ form.email.label(class='form-label') }}
-            {{ form.email(class='form-control', placeholder='you@example.com') }}
-            {% for error in form.email.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-          </div>
+        <div class="mb-3">
+          {{ form.confirm_password.label(class='form-label') }}
+          {{ form.confirm_password(class='form-control', placeholder='Re-enter your password') }}
+          {% for error in form.confirm_password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-          <div class="mb-3">
-            {{ form.password.label(class='form-label') }}
-            {{ form.password(class='form-control', id='password', placeholder='Enter a strong password') }}
-            <small class="form-text text-muted">Use 8+ characters with a mix of uppercase, lowercase, numbers, and symbols.</small>
-            <div id="password-strength" class="mt-2 small fw-bold"></div>
-            {% for error in form.password.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-          </div>
+        <div class="d-grid mb-3">{{ form.submit(class='btn', style='background-color: #D4AF37; color: white; border: none;') }}</div>
 
-          <div class="mb-3">
-            {{ form.confirm_password.label(class='form-label') }}
-            {{ form.confirm_password(class='form-control', placeholder='Re-enter your password') }}
-            {% for error in form.confirm_password.errors %}
-              <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
-          </div>
-
-          <div class="d-grid mb-3">{{ form.submit(class='btn', style='background-color: #D4AF37; color: white; border: none;') }}</div>
-
-          <div class="text-center">
-            <p class="mb-0 text-muted">
-              Already have an account?
-              <a href="{{ url_for('auth.login') }}" class="text-decoration-none" style="color: #D4AF37;">Sign in here</a>
-            </p>
-          </div>
-        </form>
-      </div>
+        <div class="text-center">
+          <p class="mb-0 text-muted">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}" class="text-decoration-none" style="color: #D4AF37;">Sign in here</a>
+          </p>
+        </div>
+      </form>
     </div>
   </main>
 
@@ -98,12 +97,12 @@
         setTimeout(() => flash.remove(), 500)
       }
     }, 3000)
+    
     const passwordInput = document.getElementById('password')
     const strengthDisplay = document.getElementById('password-strength')
     
     passwordInput.addEventListener('input', function () {
       const value = passwordInput.value
-    
       let strength = 0
       if (value.length >= 8) strength++
       if (/[A-Z]/.test(value)) strength++
@@ -111,7 +110,6 @@
       if (/\d/.test(value)) strength++
       if (/[!@#$%^&*(),.?":{}|<>]/.test(value)) strength++
     
-      // Strength classification
       let text = ''
       let color = ''
       if (strength <= 2) {
@@ -126,7 +124,6 @@
       }
     
       strengthDisplay.textContent = `Password Strength: ${text}`
-      strengthDisplay.className = `mt-2 small fw-bold`
       strengthDisplay.style.color = color
     })
   </script>
