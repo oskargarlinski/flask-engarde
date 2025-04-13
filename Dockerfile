@@ -22,6 +22,8 @@ COPY ./instance ./instance
 
 # Make sure the instance folder (for SQLite DB) is writable
 RUN chmod -R g+w ./instance
+RUN chmod -R g+w ./website/static/images/products
+
 
 EXPOSE 5000
 
