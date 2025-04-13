@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the app code and instance folder
-COPY ./app ./app
+COPY ./website ./website
 COPY ./main.py .
 COPY ./instance ./instance
 
